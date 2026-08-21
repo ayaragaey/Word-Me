@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "word": "hesitant",
+    "translation": "متردد",
+    "pronunciation": "هِزِتَنت",
+    "type": "adjective",
+    "definition": "Unsure or slow to act because you are uncertain.",
+    "examples": [
+      "She was hesitant to accept the offer.",
+      "He seemed hesitant about making the decision.",
+      "Don't be hesitant to ask for help."
+    ],
+    "level": "B1",
+    "category": "general"
+  },
+  {
+    "id": 2,
+    "word": "reliable",
+    "translation": "موثوق",
+    "pronunciation": "رِلايَبُل",
+    "type": "adjective",
+    "definition": "Able to be trusted or depended on.",
+    "examples": [
+      "She is a reliable member of the team.",
+      "We need a reliable internet connection.",
+      "He has always been reliable when I need help."
+    ],
+    "level": "B1",
+    "category": "general"
+  },
+  {
+    "id": 3,
+    "word": "remarkable",
+    "translation": "رائع / لافت للنظر",
+    "pronunciation": "رِماركَبُل",
+    "type": "adjective",
+    "definition": "Unusual or impressive enough to deserve attention.",
+    "examples": [
+      "She made remarkable progress in English.",
+      "The team achieved a remarkable result.",
+      "He has a remarkable ability to remember names."
+    ],
+    "level": "B2",
+    "category": "general"
+  }
+]
