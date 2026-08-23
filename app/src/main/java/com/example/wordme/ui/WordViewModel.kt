@@ -31,6 +31,15 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     // Persistent streak manager
     private val streakManager = StreakManager(application.applicationContext)
 
+    // User name
+    var userName by mutableStateOf(streakManager.userName)
+        private set
+
+    fun updateUserName(name: String) {
+        streakManager.userName = name
+        userName = name
+    }
+
     // Tab navigation state
     var selectedTab by mutableStateOf(Screen.HOME)
         private set

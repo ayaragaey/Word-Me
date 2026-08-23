@@ -31,6 +31,7 @@ fun LevelUpDialog(
     levelNumber: Int,
     levelName: String,
     wordsRequired: Int,
+    userName: String,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -52,7 +53,7 @@ fun LevelUpDialog(
             ) {
                 // Header
                 Text(
-                    text = "LEVEL UP! 🎉",
+                    text = "LEVEL UP, ${userName.uppercase()}! 🎉",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = AccentBlue,
@@ -88,7 +89,7 @@ fun LevelUpDialog(
 
                 // Supporting message
                 Text(
-                    text = "Your vocabulary is getting stronger. Keep going!",
+                    text = "Your vocabulary is getting stronger, $userName. Keep going!",
                     fontSize = 13.sp,
                     color = MutedBlueGrey,
                     textAlign = TextAlign.Center,

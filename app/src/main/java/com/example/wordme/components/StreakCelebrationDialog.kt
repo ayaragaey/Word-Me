@@ -41,6 +41,7 @@ import com.example.wordme.ui.theme.StreakAccent
 @Composable
 fun StreakCelebrationDialog(
     streak: Int,
+    userName: String,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,27 +49,27 @@ fun StreakCelebrationDialog(
         3 -> Triple(
             "3 DAYS!",
             "Your first streak milestone",
-            "You've shown up for 3 days in a row. Great start!"
+            "You've shown up for 3 days in a row. Great start, $userName!"
         )
         7 -> Triple(
             "7 DAYS!",
             "One full week",
-            "You've kept your Word Me streak alive for 7 days."
+            "Congratulations, $userName! You've kept your Word Me streak alive for 7 days."
         )
         30 -> Triple(
             "30 DAYS!",
             "Amazing consistency",
-            "You've learned with Word Me for 30 days in a row."
+            "Outstanding work, $userName! You've learned with Word Me for 30 days in a row."
         )
         60 -> Triple(
             "60 DAYS! 🔥",
             "Two months and counting",
-            "You've learned with Word Me for 60 days in a row."
+            "Two months and counting, $userName! Outstanding consistency!"
         )
         90 -> Triple(
             "90 DAYS! 🔥",
             "Three months of learning",
-            "90 days of showing up and learning."
+            "Three months of learning, $userName! You're making massive progress."
         )
         else -> {
             val months = streak / 30
@@ -76,7 +77,7 @@ fun StreakCelebrationDialog(
             Triple(
                 "$streak DAYS! 🔥",
                 "$monthLabel of consistency",
-                "You've learned with Word Me for $streak days in a row."
+                "You've learned with Word Me for $streak days in a row. Keep it up, $userName!"
             )
         }
     }
@@ -186,6 +187,7 @@ fun StreakCelebrationDialog(
 @Composable
 fun WordMilestoneCelebrationDialog(
     count: Int,
+    userName: String,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -256,7 +258,7 @@ fun WordMilestoneCelebrationDialog(
 
                 // Body description
                 Text(
-                    text = "You've successfully completed the exercises and learned $count unique vocabulary words. Fantastic effort!",
+                    text = "You've successfully completed the exercises and learned $count unique vocabulary words. Fantastic effort, $userName!",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = MutedBlueGrey,

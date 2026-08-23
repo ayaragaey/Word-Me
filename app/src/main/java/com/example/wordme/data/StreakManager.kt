@@ -8,6 +8,11 @@ import java.time.temporal.ChronoUnit
 class StreakManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("wordme_streak_prefs", Context.MODE_PRIVATE)
 
+    // User name
+    var userName: String?
+        get() = prefs.getString("user_name", null)
+        set(value) = prefs.edit().putString("user_name", value).apply()
+
     // Current streak
     var currentStreak: Int
         get() = prefs.getInt("current_streak", 5)

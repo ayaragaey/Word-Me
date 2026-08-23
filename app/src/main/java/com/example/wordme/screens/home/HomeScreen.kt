@@ -169,8 +169,9 @@ fun HomeScreen(
                         fontSize = titleSize,
                         fontFamily = FontFamily.Serif
                     )
+                    val greeting = viewModel.userName?.let { "Hello, $it! " } ?: ""
                     Text(
-                        text = "One word. One sentence. Every day.",
+                        text = "${greeting}One word. One sentence. Every day.",
                         fontSize = subtitleSize,
                         fontWeight = FontWeight.Normal,
                         color = MutedBlueGrey

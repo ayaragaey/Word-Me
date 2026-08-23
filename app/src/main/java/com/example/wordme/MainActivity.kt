@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.wordme.components.BottomNavigationBar
 import com.example.wordme.components.LevelUpDialog
+import com.example.wordme.components.NamePromptDialog
 import com.example.wordme.components.StreakCelebrationDialog
 import com.example.wordme.components.WordMilestoneCelebrationDialog
 import com.example.wordme.navigation.Screen
@@ -32,7 +33,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WordMeTheme {
-                if (viewModel.isRecoveryActive) {
+                val currentUserName = viewModel.userName
+                if (currentUserName.isNullOrBlank()) {
+                    NamePromptDialog(
+                        onNameSubmitted = { name ->
+                            viewModel.updateUserName(name)
+                        }
+                    )
+                } else if (viewModel.isRecoveryActive) {
                     RecoveryScreen(
                         viewModel = viewModel,
                         modifier = Modifier.fillMaxSize()
@@ -66,18 +74,21 @@ class MainActivity : ComponentActivity() {
                                     levelNumber = celebration.levelNumber,
                                     levelName = celebration.levelName,
                                     wordsRequired = celebration.wordsRequired,
+                                    userName = currentUserName,
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )
                             }
                             is com.example.wordme.ui.Celebration.WordMilestone -> {
                                 WordMilestoneCelebrationDialog(
                                     count = celebration.count,
+                                    userName = currentUserName,
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )
                             }
                             is com.example.wordme.ui.Celebration.StreakMilestone -> {
                                 StreakCelebrationDialog(
                                     streak = celebration.days,
+                                    userName = currentUserName,
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )
                             }
