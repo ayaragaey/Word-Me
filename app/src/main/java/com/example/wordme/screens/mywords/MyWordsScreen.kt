@@ -1,6 +1,7 @@
 package com.example.wordme.screens.mywords
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -40,13 +45,32 @@ import com.example.wordme.ui.theme.MutedBlueGrey
 import com.example.wordme.ui.theme.NavyPrimary
 import com.example.wordme.ui.theme.PositiveFeedbackText
 import com.example.wordme.ui.theme.SoftBlueBorder
+import com.example.wordme.components.NamePromptDialog
 
 @Composable
 fun MyWordsScreen(
     learnedWords: List<Word>,
+    userName: String?,
+    onNameChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    var showEditNameDialog by remember { mutableStateOf(false) }
+
+    if (showEditNameDialog) {
+        NamePromptDialog(
+            title = "Edit your name",
+            subtitle = "Update how you want us to address you:",
+            initialName = userName ?: "",
+            buttonText = "SAVE",
+            isDismissible = true,
+            onDismiss = { showEditNameDialog = false },
+            onNameSubmitted = { newName ->
+                onNameChanged(newName)
+                showEditNameDialog = false
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -71,12 +95,31 @@ fun MyWordsScreen(
                 fontSize = 32.sp,
                 fontFamily = FontFamily.Serif
             )
-            Text(
-                text = "Words you've learned along the way.",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = MutedBlueGrey
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                userName?.let { name ->
+                    Text(
+                        text = "Hi $name",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AccentBlue,
+                        modifier = Modifier.clickable { showEditNameDialog = true }
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "•",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MutedBlueGrey.copy(alpha = 0.5f)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
+                Text(
+                    text = "These are your learned words.",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MutedBlueGrey
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))

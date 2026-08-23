@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Word Me brand colors -->
+    <color name="navy_primary">#0E2A59</color>
+    <color name="accent_blue">#1684F8</color>
+    <color name="muted_blue_grey">#6C7C96</color>
+    <color name="light_blue">#EAF5FF</color>
+    <color name="streak_accent">#FF7A00</color>
+    <color name="soft_blue_border">#D7E9FA</color>
 </resources>

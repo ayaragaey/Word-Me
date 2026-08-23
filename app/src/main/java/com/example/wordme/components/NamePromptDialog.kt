@@ -50,16 +50,24 @@ import com.example.wordme.ui.theme.SoftBlueBorder
 @Composable
 fun NamePromptDialog(
     onNameSubmitted: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Welcome to Word Me! 👋",
+    subtitle: String = "Let's personalize your learning experience. What should we call you?",
+    initialName: String = "",
+    buttonText: String = "GET STARTED",
+    isDismissible: Boolean = false,
+    onDismiss: () -> Unit = {}
 ) {
-    var nameText by remember { mutableStateOf("") }
+    var nameText by remember(initialName) { mutableStateOf(initialName) }
     val isValid = nameText.trim().length >= 2
 
     Dialog(
-        onDismissRequest = { /* Non-dismissible */ },
+        onDismissRequest = {
+            if (isDismissible) onDismiss()
+        },
         properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
+            dismissOnBackPress = isDismissible,
+            dismissOnClickOutside = isDismissible
         )
     ) {
         Card(
@@ -101,7 +109,7 @@ fun NamePromptDialog(
 
                 // Title
                 Text(
-                    text = "Welcome to Word Me! 👋",
+                    text = title,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = NavyPrimary,
@@ -110,7 +118,7 @@ fun NamePromptDialog(
 
                 // Subtitle / Description
                 Text(
-                    text = "Let's personalize your learning experience. What should we call you?",
+                    text = subtitle,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = MutedBlueGrey,
@@ -150,41 +158,95 @@ fun NamePromptDialog(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Submit Button
-                Button(
-                    onClick = {
-                        if (isValid) {
-                            onNameSubmitted(nameText.trim())
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentBlue,
-                        contentColor = CardBackground,
-                        disabledContainerColor = SoftBlueBorder.copy(alpha = 0.6f),
-                        disabledContentColor = MutedBlueGrey.copy(alpha = 0.6f)
-                    ),
-                    enabled = isValid
-                ) {
+                if (isDismissible) {
                     Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = "GET STARTED",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "→",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        // Cancel button
+                        Button(
+                            onClick = onDismiss,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = LightBlue,
+                                contentColor = AccentBlue
+                            )
+                        ) {
+                            Text(
+                                text = "CANCEL",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
+
+                        // Submit button
+                        Button(
+                            onClick = {
+                                if (isValid) {
+                                    onNameSubmitted(nameText.trim())
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AccentBlue,
+                                contentColor = CardBackground,
+                                disabledContainerColor = SoftBlueBorder.copy(alpha = 0.6f),
+                                disabledContentColor = MutedBlueGrey.copy(alpha = 0.6f)
+                            ),
+                            enabled = isValid
+                        ) {
+                            Text(
+                                text = buttonText,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
+                    }
+                } else {
+                    // Submit Button
+                    Button(
+                        onClick = {
+                            if (isValid) {
+                                onNameSubmitted(nameText.trim())
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AccentBlue,
+                            contentColor = CardBackground,
+                            disabledContainerColor = SoftBlueBorder.copy(alpha = 0.6f),
+                            disabledContentColor = MutedBlueGrey.copy(alpha = 0.6f)
+                        ),
+                        enabled = isValid
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = buttonText,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "→",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }

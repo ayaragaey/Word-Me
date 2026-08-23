@@ -1,5 +1,6 @@
 package com.example.wordme
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        intent?.let { handleIntent(it) }
         enableEdgeToEdge()
         setContent {
             WordMeTheme {
@@ -99,6 +101,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        if (intent.getBooleanExtra("open_home", false)) {
+            viewModel.selectTab(Screen.HOME)
+        }
+    }
+
     @Composable
     private fun BoxModifier(modifier: Modifier = Modifier) {
         when (viewModel.selectedTab) {
@@ -108,6 +122,8 @@ class MainActivity : ComponentActivity() {
             )
             Screen.MY_WORDS -> MyWordsScreen(
                 learnedWords = viewModel.learnedWords,
+                userName = viewModel.userName,
+                onNameChanged = { newName -> viewModel.updateUserName(newName) },
                 modifier = modifier
             )
             Screen.MY_MILESTONES -> MyMilestonesScreen(

@@ -2,6 +2,7 @@ package com.example.wordme.screens.milestones
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordme.components.AchievementCard
 import com.example.wordme.components.LevelProgressCard
+import com.example.wordme.components.NamePromptDialog
 import com.example.wordme.ui.WordMeIcons
 import com.example.wordme.ui.WordViewModel
 import com.example.wordme.ui.theme.AccentBlue
@@ -61,6 +66,22 @@ fun MyMilestonesScreen(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    var showEditNameDialog by remember { mutableStateOf(false) }
+
+    if (showEditNameDialog) {
+        NamePromptDialog(
+            title = "Edit your name",
+            subtitle = "Update how you want us to address you:",
+            initialName = viewModel.userName ?: "",
+            buttonText = "SAVE",
+            isDismissible = true,
+            onDismiss = { showEditNameDialog = false },
+            onNameSubmitted = { newName ->
+                viewModel.updateUserName(newName)
+                showEditNameDialog = false
+            }
+        )
+    }
 
     // Retrieve word and streak milestones
     val wordMilestones = remember(viewModel.wordsLearnedCount) {
@@ -106,27 +127,31 @@ fun MyMilestonesScreen(
                     fontSize = 32.sp,
                     fontFamily = FontFamily.Serif
                 )
-                Text(
-                    text = "Track your progress and celebrate your wins.",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MutedBlueGrey
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(LightBlue)
-                    .border(1.dp, SoftBlueBorder, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = WordMeIcons.Trophy,
-                    contentDescription = null,
-                    tint = AccentBlue,
-                    modifier = Modifier.size(20.dp)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    viewModel.userName?.let { name ->
+                        Text(
+                            text = "Hi $name",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AccentBlue,
+                            modifier = Modifier.clickable { showEditNameDialog = true }
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "•",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MutedBlueGrey.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    Text(
+                        text = "Track your progress and celebrate your wins.",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MutedBlueGrey
+                    )
+                }
             }
         }
 

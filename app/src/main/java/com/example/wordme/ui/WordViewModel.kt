@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
+import com.example.wordme.widget.WidgetUpdater
 
 sealed interface Celebration {
     data class LevelUp(val levelNumber: Int, val levelName: String, val wordsRequired: Int) : Celebration
@@ -38,6 +39,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     fun updateUserName(name: String) {
         streakManager.userName = name
         userName = name
+        WidgetUpdater.updateWidget(getApplication())
     }
 
     // Tab navigation state
@@ -156,6 +158,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             isRecoveryActive = false
         }
+        WidgetUpdater.updateWidget(getApplication())
     }
 
     private fun initializeAcknowledgedCelebrationsIfNeeded() {
@@ -314,6 +317,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         streakManager.onWordCompleted()
         dayCount = streakManager.dayCount
         streakCount = streakManager.currentStreak
+        WidgetUpdater.updateWidget(getApplication())
 
         val wordToAdd = currentWord
         val isNewWord = !streakManager.learnedWordIds.contains(wordToAdd.id.toString())
@@ -416,6 +420,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
             dayCount = streakManager.dayCount
             streakCount = streakManager.currentStreak
             recoveryStep = RecoveryStep.SUCCESS
+            WidgetUpdater.updateWidget(getApplication())
         }
     }
 
@@ -436,6 +441,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         dayCount = streakManager.dayCount
         streakCount = 0
         isRecoveryActive = false
+        WidgetUpdater.updateWidget(getApplication())
     }
 
     private fun startTimerJob() {
@@ -449,6 +455,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
                     dayCount = streakManager.dayCount
                     recoveryStep = RecoveryStep.FAILURE
                     stopTimerJob()
+                    WidgetUpdater.updateWidget(getApplication())
                     break
                 } else {
                     val minutes = (timeLeftMs / 1000) / 60

@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import com.example.wordme.R
 import com.example.wordme.components.FeedbackCard
 import com.example.wordme.components.LevelProgressCard
+import com.example.wordme.components.NamePromptDialog
 import com.example.wordme.components.ProgressOverview
 import com.example.wordme.components.WordCard
 import com.example.wordme.components.YourTurnCard
@@ -74,6 +76,22 @@ fun HomeScreen(
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    var showEditNameDialog by remember { mutableStateOf(false) }
+
+    if (showEditNameDialog) {
+        NamePromptDialog(
+            title = "Edit your name",
+            subtitle = "Update how you want us to address you:",
+            initialName = viewModel.userName ?: "",
+            buttonText = "SAVE",
+            isDismissible = true,
+            onDismiss = { showEditNameDialog = false },
+            onNameSubmitted = { newName ->
+                viewModel.updateUserName(newName)
+                showEditNameDialog = false
+            }
+        )
+    }
 
     // TextToSpeech engine initialization
     var textToSpeech by remember { mutableStateOf<TextToSpeech?>(null) }
@@ -169,13 +187,22 @@ fun HomeScreen(
                         fontSize = titleSize,
                         fontFamily = FontFamily.Serif
                     )
-                    val greeting = viewModel.userName?.let { "Hello, $it! " } ?: ""
                     Text(
-                        text = "${greeting}One word. One sentence. Every day.",
+                        text = "One word. One sentence. Every day.",
                         fontSize = subtitleSize,
                         fontWeight = FontWeight.Normal,
                         color = MutedBlueGrey
                     )
+                    viewModel.userName?.let { name ->
+                        Text(
+                            text = "Hi $name",
+                            fontSize = subtitleSize,
+                            fontWeight = FontWeight.Bold,
+                            color = AccentBlue,
+                            modifier = Modifier
+                                .clickable { showEditNameDialog = true }
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
