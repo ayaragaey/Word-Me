@@ -28,6 +28,10 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
 import com.example.wordme.data.Word
 import com.example.wordme.ui.WordMeIcons
 import com.example.wordme.ui.theme.AccentBlue
@@ -56,11 +60,16 @@ fun MyWordsScreen(
         // Header Section (Visually matching HomeScreen)
         Column {
             Text(
-                text = "My Words",
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color(0xFF0D2A59), fontWeight = FontWeight.Bold)) {
+                        append("My ")
+                    }
+                    withStyle(style = SpanStyle(color = Color(0xFF2784F5), fontWeight = FontWeight.Bold)) {
+                        append("Words")
+                    }
+                },
                 fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = NavyPrimary,
-                fontFamily = FontFamily.SansSerif
+                fontFamily = FontFamily.Serif
             )
             Text(
                 text = "Words you've learned along the way.",

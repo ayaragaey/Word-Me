@@ -42,8 +42,21 @@ import com.example.wordme.ui.theme.StreakAccent
 @Composable
 fun FeedbackCard(
     word: String,
+    score: Int,
     modifier: Modifier = Modifier
 ) {
+    val feedbackTitle = when {
+        score >= 8 -> "Great job! 🎉"
+        score >= 5 -> "Good effort! 👍"
+        else -> "Keep practicing! 📝"
+    }
+
+    val feedbackDetails = when {
+        score >= 8 -> "Your sentence is grammatically correct and you used '${word.lowercase()}' naturally."
+        score >= 5 -> "You used '${word.lowercase()}' in the sentence. Try to make it a bit more natural or grammatically complete."
+        else -> "Try to write a complete sentence using '${word.lowercase()}' to practice."
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -61,7 +74,7 @@ fun FeedbackCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Score circle (9/10)
+                // Score circle
                 Box(
                     modifier = Modifier.size(64.dp),
                     contentAlignment = Alignment.Center
@@ -71,17 +84,18 @@ fun FeedbackCard(
                             color = Color.White,
                             style = Stroke(width = 5.dp.toPx())
                         )
+                        val sweep = (score.toFloat() / 10f) * 360f
                         drawArc(
                             color = PositiveFeedbackText,
                             startAngle = -90f,
-                            sweepAngle = 324f, // 9/10 sweep
+                            sweepAngle = sweep,
                             useCenter = false,
                             style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round)
                         )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "9",
+                            text = "$score",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = PositiveFeedbackText
@@ -98,14 +112,14 @@ fun FeedbackCard(
                 // Feedback message
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Great job! 🎉",
+                        text = feedbackTitle,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = PositiveFeedbackText
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Your sentence is grammatically correct and you used '${word.lowercase()}' naturally.",
+                        text = feedbackDetails,
                         fontSize = 13.sp,
                         color = NavyPrimary,
                         lineHeight = 17.sp
@@ -119,7 +133,7 @@ fun FeedbackCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 for (i in 1..10) {
-                    val filled = i <= 9
+                    val filled = i <= score
                     Box(
                         modifier = Modifier
                             .size(6.dp)
@@ -134,7 +148,7 @@ fun FeedbackCard(
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "9/10",
+                    text = "$score/10",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = PositiveFeedbackText

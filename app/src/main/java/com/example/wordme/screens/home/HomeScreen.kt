@@ -214,7 +214,10 @@ fun HomeScreen(
             enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
             exit = fadeOut()
         ) {
-            FeedbackCard(word = viewModel.currentWord.word)
+            FeedbackCard(
+                word = viewModel.currentWord.word,
+                score = viewModel.currentSentenceScore
+            )
         }
 
         // Ready for another word CTA (always visible so users can cycle words at any time)

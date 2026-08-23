@@ -36,6 +36,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wordme.components.AchievementCard
@@ -70,16 +73,10 @@ fun MyMilestonesScreen(
     // Next word milestone target
     val inProgressWordMilestone = wordMilestones.find { it.status == MilestoneStatus.IN_PROGRESS }
     val nextWordTarget = inProgressWordMilestone?.targetValue ?: 50
-    val prevWordTarget = when (nextWordTarget) {
-        1 -> 0
-        10 -> 1
-        25 -> 10
-        50 -> 25
-        else -> nextWordTarget - 50
-    }
+    val prevWordTarget = if (nextWordTarget > 50) nextWordTarget - 50 else 0
     val currentProgressInMilestone = (viewModel.wordsLearnedCount - prevWordTarget).coerceAtLeast(0)
     val totalRangeInMilestone = (nextWordTarget - prevWordTarget).coerceAtLeast(1)
-    val wordProgressFraction = currentProgressInMilestone.toFloat() / totalRangeInMilestone.toFloat()
+    val wordProgressFraction = if (viewModel.wordsLearnedCount >= 500000) 1.0f else currentProgressInMilestone.toFloat() / totalRangeInMilestone.toFloat()
 
     Column(
         modifier = modifier
@@ -98,11 +95,16 @@ fun MyMilestonesScreen(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "My Milestones",
-                    fontSize = 32.sp, // Large visually premium title
-                    fontWeight = FontWeight.ExtraBold,
-                    color = NavyPrimary,
-                    fontFamily = FontFamily.SansSerif
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color(0xFF0D2A59), fontWeight = FontWeight.Bold)) {
+                            append("My ")
+                        }
+                        withStyle(style = SpanStyle(color = Color(0xFF2784F5), fontWeight = FontWeight.Bold)) {
+                            append("Milestones")
+                        }
+                    },
+                    fontSize = 32.sp,
+                    fontFamily = FontFamily.Serif
                 )
                 Text(
                     text = "Track your progress and celebrate your wins.",

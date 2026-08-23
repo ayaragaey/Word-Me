@@ -19,32 +19,11 @@ data class MilestoneItem(
 object MilestoneUtils {
 
     fun getWordMilestones(wordsLearned: Int): List<MilestoneItem> {
-        val target = when {
-            wordsLearned < 1 -> 1
-            wordsLearned in 1..9 -> 10
-            wordsLearned in 10..24 -> 25
-            wordsLearned in 25..49 -> 50
-            else -> {
-                if (wordsLearned % 50 == 0) wordsLearned + 50 else ((wordsLearned / 50) + 1) * 50
-            }
-        }
+        val target = ((wordsLearned / 50) + 1) * 50
+        val cappedTarget = if (target > 500000) 500000 else target
 
-        val previous = when (target) {
-            1 -> null
-            10 -> 1
-            25 -> 10
-            50 -> 25
-            100 -> 50
-            else -> target - 50
-        }
-
-        val next = when (target) {
-            1 -> 10
-            10 -> 25
-            25 -> 50
-            50 -> 100
-            else -> target + 50
-        }
+        val previous = if (cappedTarget - 50 >= 50) cappedTarget - 50 else null
+        val next = if (cappedTarget + 50 <= 500000) cappedTarget + 50 else null
 
         val list = mutableListOf<MilestoneItem>()
 
@@ -53,8 +32,8 @@ object MilestoneUtils {
             list.add(
                 MilestoneItem(
                     id = "word_$previous",
-                    title = if (previous == 1) "First Word" else "$previous Words Learned",
-                    description = if (previous == 1) "Learn your first word." else "Learn $previous words.",
+                    title = "$previous Words Learned",
+                    description = "Learn $previous words.",
                     currentValue = previous,
                     targetValue = previous,
                     status = MilestoneStatus.UNLOCKED,
@@ -63,21 +42,35 @@ object MilestoneUtils {
             )
         }
 
-        // 2. In Progress
-        list.add(
-            MilestoneItem(
-                id = "word_$target",
-                title = if (target == 1) "First Word" else "$target Words Learned",
-                description = if (target == 1) "Learn your first word." else "Learn $target words.",
-                currentValue = wordsLearned,
-                targetValue = target,
-                status = MilestoneStatus.IN_PROGRESS,
-                category = "word"
+        // 2. In Progress / Completed
+        if (wordsLearned < 500000) {
+            list.add(
+                MilestoneItem(
+                    id = "word_$cappedTarget",
+                    title = "$cappedTarget Words Learned",
+                    description = "Learn $cappedTarget words.",
+                    currentValue = wordsLearned,
+                    targetValue = cappedTarget,
+                    status = MilestoneStatus.IN_PROGRESS,
+                    category = "word"
+                )
             )
-        )
+        } else {
+            list.add(
+                MilestoneItem(
+                    id = "word_500000",
+                    title = "500,000 Words Learned",
+                    description = "Learn 500,000 words.",
+                    currentValue = 500000,
+                    targetValue = 500000,
+                    status = MilestoneStatus.UNLOCKED,
+                    category = "word"
+                )
+            )
+        }
 
         // 3. Up Next (Locked)
-        if (next <= 500000) {
+        if (next != null && wordsLearned < 500000) {
             list.add(
                 MilestoneItem(
                     id = "word_$next",
