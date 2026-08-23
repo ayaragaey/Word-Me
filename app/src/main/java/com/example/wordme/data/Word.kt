@@ -8,6 +8,6 @@ data class Word(
     val type: String,
     val definition: String,
     val examples: List<String>,
-    val level: String,
-    val category: String
+    val exampleTranslations: List<String> = emptyList(),    val level: String = "B1",
+    val category: String = "general"
 )

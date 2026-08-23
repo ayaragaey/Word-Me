@@ -3,25 +3,32 @@ package com.example.wordme.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Premium Word Me Color Palette
-val NavyPrimary = Color(0xFF0D2A59)      // #0D2A59 Primary dark text/headings
-val AccentBlue = Color(0xFF2784F5)       // #2784F5 Primary accent blue
-val SoftSkyBlue = Color(0xFFEAF4FF)      // #EAF4FF Light blue/highlight background
-val PaleBlueBg = Color(0xFFF6FAFF)       // #F6FAFF Background
-val PureWhite = Color(0xFFFFFFFF)        // #FFFFFF Cards
-val PaleBlueBorder = Color(0xFFD8E9FC)   // #D8E9FC Border blue
-val MutedBlueGrey = Color(0xFF718096)    // #718096 Muted text
+val MainBackground = Color(0xFFF4F9FF)     // #F4F9FF App Background
+val CardBackground = Color(0xFFFFFFFF)     // #FFFFFF Cards
+val NavyPrimary = Color(0xFF0E2A59)        // #0E2A59 Deep navy
+val DarkBlue = Color(0xFF163E73)           // #163E73 Dark blue
+val AccentBlue = Color(0xFF1684F8)         // #1684F8 Primary blue
+val BrightBlue = Color(0xFF2697FF)         // #2697FF Bright blue
+val LightBlue = Color(0xFFEAF5FF)          // #EAF5FF Pale blue
+val SoftBlueBorder = Color(0xFFD7E9FA)     // #D7E9FA Border
+val MutedBlueGrey = Color(0xFF6C7C96)      // #6C7C96 Secondary text
+val StreakAccent = Color(0xFFFF7A00)       // #FF7A00 Streak orange
+val FemalePronunciationText = Color(0xFFEC4C94)// #EC4C94 Pink pronunciation accent
+val FemalePronunciationBg = Color(0xFFFFF0F6)  // Muted pink background
+val PositiveFeedbackBg = Color(0xFFF0FBF7) // #F0FBF7 Positive pale green
+val PositiveFeedbackText = Color(0xFF0E7A53)// Dark green for positive feedback text
 
 // Map to Material 3 standard scheme naming
 val LightPrimary = NavyPrimary
 val LightSecondary = AccentBlue
-val LightTertiary = SoftSkyBlue
-val LightBackground = PaleBlueBg
-val LightSurface = PureWhite
-val LightPrimaryContainer = SoftSkyBlue
-val LightOutline = PaleBlueBorder
+val LightTertiary = LightBlue
+val LightBackground = MainBackground
+val LightSurface = CardBackground
+val LightPrimaryContainer = LightBlue
+val LightOutline = SoftBlueBorder
 val LightOnSurfaceVariant = MutedBlueGrey
 
-// Dark Colors fallback (in case dark theme is used, though light-theme is suggested)
+// Dark Colors fallback
 val DarkPrimary = Color(0xFFF1F5F9)
 val DarkSecondary = Color(0xFF60A5FA)
 val DarkTertiary = Color(0xFF1E3A8A)
