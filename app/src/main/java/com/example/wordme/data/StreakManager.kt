@@ -59,7 +59,7 @@ class StreakManager(context: Context) {
 
     // Learned word IDs
     var learnedWordIds: Set<String>
-        get() = prefs.getStringSet("learned_word_ids", null) ?: (101..127).map { it.toString() }.toSet()
+        get() = prefs.getStringSet("learned_word_ids", null) ?: (101..227).map { it.toString() }.toSet()
         set(value) = prefs.edit().putStringSet("learned_word_ids", value).apply()
 
     // Sentences Written
@@ -86,6 +86,40 @@ class StreakManager(context: Context) {
     var recoveryChallengeProgress: Int
         get() = prefs.getInt("recovery_challenge_progress", 0)
         set(value) = prefs.edit().putInt("recovery_challenge_progress", value).apply()
+
+    // Joined Date (e.g. "Joined Aug 2026")
+    var joinedDate: String
+        get() = prefs.getString("joined_date", null) ?: run {
+            val dateStr = "Joined " + java.time.format.DateTimeFormatter.ofPattern("MMM yyyy", java.util.Locale.US).format(java.time.LocalDate.now())
+            prefs.edit().putString("joined_date", dateStr).apply()
+            dateStr
+        }
+        set(value) = prefs.edit().putString("joined_date", value).apply()
+
+    // Notification setting
+    var notificationsEnabled: Boolean
+        get() = prefs.getBoolean("notifications_enabled", true)
+        set(value) = prefs.edit().putBoolean("notifications_enabled", value).apply()
+
+    // Reminder time setting
+    var reminderTime: String
+        get() = prefs.getString("reminder_time", "8:00 AM") ?: "8:00 AM"
+        set(value) = prefs.edit().putString("reminder_time", value).apply()
+
+    // Learning goals setting
+    var learningGoals: Set<String>
+        get() = prefs.getStringSet("learning_goals", null) ?: setOf("Improve daily communication")
+        set(value) = prefs.edit().putStringSet("learning_goals", value).apply()
+
+    // Daily target setting
+    var dailyTarget: Int
+        get() = prefs.getInt("daily_target", 1)
+        set(value) = prefs.edit().putInt("daily_target", value).apply()
+
+    // Reset all data
+    fun resetAllData() {
+        prefs.edit().clear().apply()
+    }
 
     /**
      * Determines the streak status and recovery availability on app launch.

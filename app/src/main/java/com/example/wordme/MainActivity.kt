@@ -21,6 +21,7 @@ import com.example.wordme.screens.home.HomeScreen
 import com.example.wordme.screens.mywords.MyWordsScreen
 import com.example.wordme.screens.milestones.MyMilestonesScreen
 import com.example.wordme.screens.recovery.RecoveryScreen
+import com.example.wordme.screens.profile.ProfileScreen
 import com.example.wordme.ui.WordViewModel
 import com.example.wordme.ui.theme.WordMeTheme
 
@@ -124,6 +125,12 @@ class MainActivity : ComponentActivity() {
                 learnedWords = viewModel.learnedWords,
                 userName = viewModel.userName,
                 onNameChanged = { newName -> viewModel.updateUserName(newName) },
+                onRehearseWord = { word -> viewModel.startRehearsal(word) },
+                onNavigateToHome = { viewModel.selectTab(Screen.HOME) },
+                modifier = modifier
+            )
+            Screen.PROFILE -> ProfileScreen(
+                viewModel = viewModel,
                 modifier = modifier
             )
             Screen.MY_MILESTONES -> MyMilestonesScreen(

@@ -3,6 +3,7 @@ package com.example.wordme.components
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -83,19 +84,19 @@ fun BottomNavigationBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == "milestones",
-            onClick = { onTabSelected("milestones") },
+            selected = selectedTab == "profile",
+            onClick = { onTabSelected("profile") },
             icon = {
                 Icon(
-                    imageVector = WordMeIcons.Trophy,
-                    contentDescription = "My Milestones"
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "My Profile"
                 )
             },
             label = {
                 Text(
-                    text = "My Milestones",
+                    text = "My Profile",
                     fontSize = 11.sp,
-                    fontWeight = if (selectedTab == "milestones") FontWeight.Bold else FontWeight.Medium
+                    fontWeight = if (selectedTab == "profile") FontWeight.Bold else FontWeight.Medium
                 )
             },
             colors = NavigationBarItemDefaults.colors(

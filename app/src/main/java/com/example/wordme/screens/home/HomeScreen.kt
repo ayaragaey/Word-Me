@@ -218,6 +218,50 @@ fun HomeScreen(
         // Level Progress Card
         LevelProgressCard(levelDetails = viewModel.levelDetails)
 
+        if (viewModel.rehearsalWord != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, SoftBlueBorder),
+                colors = CardDefaults.cardColors(containerColor = LightBlue),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "🔄",
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "Rehearsal Mode: Refreshing memory",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = NavyPrimary
+                        )
+                    }
+                    Text(
+                        text = "Exit",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AccentBlue,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { viewModel.exitRehearsal() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+        }
+
         // Word Card
         WordCard(
             word = viewModel.currentWord,
@@ -287,7 +331,7 @@ fun HomeScreen(
                     }
 
                     Text(
-                        text = "Ready for another word?",
+                        text = if (viewModel.rehearsalWord != null) "Exit rehearsal and learn a new word?" else "Ready for another word?",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = NavyPrimary

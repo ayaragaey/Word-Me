@@ -20,6 +20,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -107,6 +109,28 @@ fun MyMilestonesScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp) // Cohesive 12dp gap
     ) {
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Back to Profile Button
+        Row(
+            modifier = Modifier
+                .clickable { viewModel.selectTab(com.example.wordme.navigation.Screen.PROFILE) }
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back to My Profile",
+                tint = AccentBlue,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = "Back to My Profile",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = AccentBlue
+            )
+        }
 
         // Header Area with Trophy
         Row(

@@ -54,7 +54,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         private set
 
     val currentWord: Word
-        get() = words[currentWordIndex]
+        get() = rehearsalWord ?: words[currentWordIndex]
 
     // Vocab lookup map combining assets database and initial mock words
     private val allWordsLookup: Map<Int, Word> by lazy {
@@ -83,6 +83,50 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
 
     var bestScore by mutableStateOf("${streakManager.bestScoreValue}/10")
         private set
+
+    // Settings & goal states
+    val joinedDate: String
+        get() = streakManager.joinedDate
+
+    var notificationsEnabled by mutableStateOf(streakManager.notificationsEnabled)
+        private set
+
+    fun toggleNotifications(enabled: Boolean) {
+        streakManager.notificationsEnabled = enabled
+        notificationsEnabled = enabled
+    }
+
+    var reminderTime by mutableStateOf(streakManager.reminderTime)
+        private set
+
+    fun updateReminderTime(time: String) {
+        streakManager.reminderTime = time
+        reminderTime = time
+    }
+
+    var learningGoals by mutableStateOf(streakManager.learningGoals)
+        private set
+
+    fun toggleLearningGoal(goal: String) {
+        val current = learningGoals.toMutableSet()
+        if (current.contains(goal)) {
+            if (current.size > 1) {
+                current.remove(goal)
+            }
+        } else {
+            current.add(goal)
+        }
+        streakManager.learningGoals = current
+        learningGoals = current
+    }
+
+    var dailyTarget by mutableStateOf(streakManager.dailyTarget)
+        private set
+
+    fun updateDailyTarget(target: Int) {
+        streakManager.dailyTarget = target
+        dailyTarget = target
+    }
 
     // Learned words tracking
     var learnedWords by mutableStateOf<List<Word>>(emptyList())
@@ -125,8 +169,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         // Reconstruct learned words list on launch
-        val savedIds = streakManager.learnedWordIds.mapNotNull { it.toIntOrNull() }
-        learnedWords = savedIds.mapNotNull { allWordsLookup[it] }
+        reconstructLearnedWords()
 
         checkStreakOnLaunch()
         initializeAcknowledgedCelebrationsIfNeeded()
@@ -313,6 +356,11 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
             bestScore = "${score}/10"
         }
 
+        if (rehearsalWord != null) {
+            WidgetUpdater.updateWidget(getApplication())
+            return
+        }
+
         // Update streak persistently
         streakManager.onWordCompleted()
         dayCount = streakManager.dayCount
@@ -320,18 +368,20 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         WidgetUpdater.updateWidget(getApplication())
 
         val wordToAdd = currentWord
-        val isNewWord = !streakManager.learnedWordIds.contains(wordToAdd.id.toString())
+        val isNewWord = streakManager.learnedWordIds.none { it.startsWith("${wordToAdd.id}:") || it == wordToAdd.id.toString() }
 
         if (isNewWord) {
             val oldWordsCount = wordsLearnedCount
             val oldLevel = levelDetails.level
 
-            // Save word persistently
-            val updatedWordIds = streakManager.learnedWordIds + wordToAdd.id.toString()
+            // Save word persistently with today's date
+            val todayStr = java.time.LocalDate.now().toString()
+            val newEntry = "${wordToAdd.id}:$todayStr"
+            val updatedWordIds = streakManager.learnedWordIds + newEntry
             streakManager.learnedWordIds = updatedWordIds
             
             // Reconstruct learned words list
-            learnedWords = updatedWordIds.mapNotNull { allWordsLookup[it.toIntOrNull()] }
+            reconstructLearnedWords()
 
             val newWordsCount = wordsLearnedCount
             val newLevel = levelDetails.level
@@ -372,6 +422,9 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun nextWord() {
+        if (rehearsalWord != null) {
+            rehearsalWord = null
+        }
         currentWordIndex = (currentWordIndex + 1) % words.size
         sentenceText = ""
         isChecked = false
@@ -470,6 +523,79 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     private fun stopTimerJob() {
         timerJob?.cancel()
         timerJob = null
+    }
+
+    // --- Rehearsal Mode & Helpers ---
+
+    var rehearsalWord by mutableStateOf<Word?>(null)
+        private set
+
+    fun startRehearsal(word: Word) {
+        rehearsalWord = word
+        sentenceText = ""
+        isChecked = false
+        showExampleTranslations = false
+        selectedTab = Screen.HOME
+    }
+
+    fun exitRehearsal() {
+        rehearsalWord = null
+        sentenceText = ""
+        isChecked = false
+        showExampleTranslations = false
+    }
+
+    private fun reconstructLearnedWords() {
+        learnedWords = streakManager.learnedWordIds.mapNotNull { entry ->
+            val parts = entry.split(":")
+            val id = parts[0].toIntOrNull() ?: return@mapNotNull null
+            val date = parts.getOrNull(1) ?: getFallbackDateForId(id)
+            val baseWord = allWordsLookup[id]
+            baseWord?.copy(learnedDate = date)
+        }
+    }
+
+    private fun getFallbackDateForId(id: Int?): String {
+        if (id == null) return java.time.LocalDate.now().toString()
+        return when {
+            id >= 120 -> java.time.LocalDate.now().toString()
+            id >= 110 -> java.time.LocalDate.now().minusDays(1).toString()
+            else -> java.time.LocalDate.now().minusDays(2).toString()
+        }
+    }
+
+    fun resetProgress() {
+        streakManager.resetAllData()
+
+        // Reload name & states from streakManager
+        userName = streakManager.userName
+        dayCount = streakManager.dayCount
+        streakCount = streakManager.currentStreak
+        sentencesWrittenCount = streakManager.sentencesWritten
+        bestScore = "${streakManager.bestScoreValue}/10"
+
+        // Settings/goals values
+        notificationsEnabled = streakManager.notificationsEnabled
+        reminderTime = streakManager.reminderTime
+        learningGoals = streakManager.learningGoals
+        dailyTarget = streakManager.dailyTarget
+
+        // Celebrations & learned words
+        pendingCelebrations = emptyList()
+        reconstructLearnedWords()
+
+        // Set tab back to Home
+        selectedTab = Screen.HOME
+
+        // Reset current word index
+        currentWordIndex = 0
+        sentenceText = ""
+        isChecked = false
+        showExampleTranslations = false
+        isRecoveryActive = false
+        recoveryStep = RecoveryStep.INTRO
+
+        WidgetUpdater.updateWidget(getApplication())
     }
 
     override fun onCleared() {

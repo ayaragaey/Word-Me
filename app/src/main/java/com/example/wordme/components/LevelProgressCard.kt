@@ -35,9 +35,9 @@ import com.example.wordme.utils.LevelDetails
 fun LevelBadge(level: Int, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .width(30.dp) // Shrunk width
-            .height(40.dp), // Shrunk height
-        contentAlignment = Alignment.Center
+            .width(36.dp)
+            .height(46.dp),
+        contentAlignment = Alignment.TopCenter
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
@@ -47,9 +47,9 @@ fun LevelBadge(level: Int, modifier: Modifier = Modifier) {
             val path = Path().apply {
                 moveTo(0f, 0f)
                 lineTo(width, 0f)
-                lineTo(width, height * 0.85f)
-                lineTo(width * 0.5f, height * 0.7f)
-                lineTo(0f, height * 0.85f)
+                lineTo(width, height * 0.9f)
+                lineTo(width * 0.5f, height * 0.75f)
+                lineTo(0f, height * 0.9f)
                 close()
             }
             drawPath(
@@ -60,18 +60,17 @@ fun LevelBadge(level: Int, modifier: Modifier = Modifier) {
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(bottom = 3.dp)
+            modifier = Modifier.padding(top = 4.dp)
         ) {
             Text(
                 text = "👑",
-                fontSize = 8.sp // Smaller crown
+                fontSize = 10.sp
             )
             Spacer(modifier = Modifier.height(1.dp))
             Text(
                 text = "$level",
                 color = Color.White,
-                fontSize = 12.sp, // Smaller font
+                fontSize = 14.sp,
                 fontWeight = FontWeight.ExtraBold
             )
         }
