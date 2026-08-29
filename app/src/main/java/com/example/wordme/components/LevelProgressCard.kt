@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wordme.ui.theme.AccentBlue
 import com.example.wordme.ui.theme.BrightBlue
 import com.example.wordme.ui.theme.DarkBlue
 import com.example.wordme.ui.theme.NavyPrimary
@@ -54,7 +55,7 @@ fun LevelBadge(level: Int, modifier: Modifier = Modifier) {
             }
             drawPath(
                 path = path,
-                color = Color(0xFF1684F8) // Primary blue accent for ribbon body
+                color = AccentBlue // Primary blue accent for ribbon body
             )
         }
 

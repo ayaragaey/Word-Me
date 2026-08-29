@@ -3,15 +3,16 @@ package com.example.wordme.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Premium Word Me Color Palette
-val MainBackground = Color(0xFFFFFFFF)     // #FFFFFF App Background (White)
+val MainBackground = Color(0xFFF7FAFE)     // #F7FAFE App Background (Subtle light blue / off-white)
 val CardBackground = Color(0xFFFFFFFF)     // #FFFFFF Cards
-val NavyPrimary = Color(0xFF0E2A59)        // #0E2A59 Deep navy
-val DarkBlue = Color(0xFF163E73)           // #163E73 Dark blue
-val AccentBlue = Color(0xFF1684F8)         // #1684F8 Primary blue
-val BrightBlue = Color(0xFF2697FF)         // #2697FF Bright blue
-val LightBlue = Color(0xFFEAF5FF)          // #EAF5FF Pale blue
-val SoftBlueBorder = Color(0xFFD7E9FA)     // #D7E9FA Border
-val MutedBlueGrey = Color(0xFF6C7C96)      // #6C7C96 Secondary text
+val NavyPrimary = Color(0xFF041855)        // #041855 Logo dark navy (Main text)
+val DarkBlue = Color(0xFF072B6B)           // #072B6B Deep navy accent
+val AccentBlue = Color(0xFF196AE6)         // #196AE6 Logo bright blue (Primary accent & interactive)
+val BrightBlue = Color(0xFF196AE6)         // #196AE6 Logo bright blue
+val LogoTeal = Color(0xFF2FA7B3)           // #2FA7B3 Logo teal/cyan accent
+val LightBlue = Color(0xFFEBF3FC)          // #EBF3FC Pale blue container/pill
+val SoftBlueBorder = Color(0xFFD6E4F6)     // #D6E4F6 Border
+val MutedBlueGrey = Color(0xFF5D708E)      // #5D708E Secondary text
 val StreakAccent = Color(0xFFFF7A00)       // #FF7A00 Streak orange
 val FemalePronunciationText = Color(0xFFEC4C94)// #EC4C94 Pink pronunciation accent
 val FemalePronunciationBg = Color(0xFFFFF0F6)  // Muted pink background

@@ -61,6 +61,7 @@ import com.example.wordme.ui.theme.AccentBlue
 import com.example.wordme.ui.theme.CardBackground
 import com.example.wordme.ui.theme.DarkBlue
 import com.example.wordme.ui.theme.LightBlue
+import com.example.wordme.ui.theme.LogoTeal
 import com.example.wordme.ui.theme.MutedBlueGrey
 import com.example.wordme.ui.theme.NavyPrimary
 import com.example.wordme.ui.theme.SoftBlueBorder
@@ -153,10 +154,10 @@ fun MyWordsScreen(
         Column {
             Text(
                 text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color(0xFF0D2A59), fontWeight = FontWeight.Bold)) {
+                    withStyle(style = SpanStyle(color = LogoTeal, fontWeight = FontWeight.Bold)) {
                         append("My ")
                     }
-                    withStyle(style = SpanStyle(color = Color(0xFF2784F5), fontWeight = FontWeight.Bold)) {
+                    withStyle(style = SpanStyle(color = AccentBlue, fontWeight = FontWeight.Bold)) {
                         append("Words")
                     }
                 },
@@ -249,12 +250,12 @@ fun MyWordsScreen(
                     text = "Sort",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF1784F5)
+                    color = AccentBlue
                 )
                 Text(
                     text = "▼",
                     fontSize = 10.sp,
-                    color = Color(0xFF1784F5)
+                    color = AccentBlue
                 )
             }
 
@@ -424,7 +425,7 @@ fun WordEntryItem(
                     text = word.word.uppercase(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1784F5)
+                    color = AccentBlue
                 )
 
                 if (goal.isNotBlank()) {
@@ -444,9 +445,9 @@ fun WordEntryItem(
         Spacer(modifier = Modifier.width(8.dp))
         OutlinedButton(
             onClick = { onRehearseClick(word) },
-            border = BorderStroke(1.dp, Color(0xFF1784F5)),
+            border = BorderStroke(1.dp, AccentBlue),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1784F5)),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentBlue),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
             modifier = Modifier.height(32.dp)
         ) {

@@ -68,6 +68,7 @@ import com.example.wordme.navigation.Screen
 import com.example.wordme.ui.theme.AccentBlue
 import com.example.wordme.ui.theme.CardBackground
 import com.example.wordme.ui.theme.LightBlue
+import com.example.wordme.ui.theme.LogoTeal
 import com.example.wordme.ui.theme.MutedBlueGrey
 import com.example.wordme.ui.theme.NavyPrimary
 import com.example.wordme.ui.theme.SoftBlueBorder
@@ -156,10 +157,10 @@ fun HomeScreen(
 
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = Color(0xFF0D2A59), fontWeight = FontWeight.Bold)) {
+                        withStyle(style = SpanStyle(color = LogoTeal, fontWeight = FontWeight.Bold)) {
                             append("Word ")
                         }
-                        withStyle(style = SpanStyle(color = Color(0xFF2784F5), fontWeight = FontWeight.Bold)) {
+                        withStyle(style = SpanStyle(color = AccentBlue, fontWeight = FontWeight.Bold)) {
                             append("Me!")
                         }
                     },

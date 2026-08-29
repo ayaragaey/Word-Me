@@ -25,12 +25,14 @@ import com.example.wordme.screens.profile.ProfileScreen
 import com.example.wordme.ui.WordViewModel
 import com.example.wordme.ui.theme.WordMeTheme
 
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.material3.MaterialTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: WordViewModel by viewModels { WordViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         intent?.let { handleIntent(it) }
         enableEdgeToEdge()
