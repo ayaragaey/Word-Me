@@ -403,7 +403,7 @@ fun MyMilestonesScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "🎉",
+                        text = "💪🏼",
                         fontSize = 28.sp
                     )
                     Column(modifier = Modifier.weight(1f)) {

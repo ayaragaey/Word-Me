@@ -1,10 +1,12 @@
 package com.example.wordme.screens.home
 
 import com.example.wordme.audio.VocabularyAudioManager
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -115,86 +117,172 @@ fun HomeScreen(
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp) // Reduced vertical gap between cards to move everything up
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.height(6.dp)) // Shrunk top spacing to bring everything up
-
-        // Header Section (Row containing logo/title on the left, and Hi Name on the right)
-        val configuration = LocalConfiguration.current
-        val screenWidth = configuration.screenWidthDp
-        val isSmallScreen = screenWidth < 360
-
-        val logoSize = if (isSmallScreen) 34.dp else 40.dp
-        val horizontalGap = if (isSmallScreen) 6.dp else 10.dp
-        val titleSize = if (isSmallScreen) 26.sp else 30.sp
-
-        val nameToDisplay = if (viewModel.userName.isNullOrBlank()) "Explorer" else viewModel.userName
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Header Section
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp) // Reduced vertical gap between cards to move everything up
         ) {
-            // Left part: Logo and Title text in a horizontal row
+            Spacer(modifier = Modifier.height(6.dp)) // Shrunk top spacing to bring everything up
+
+            // Header Section (Row containing logo/title on the left, and Hi Name on the right)
+            val configuration = LocalConfiguration.current
+            val screenWidth = configuration.screenWidthDp
+            val isSmallScreen = screenWidth < 360
+
+            val logoSize = if (isSmallScreen) 34.dp else 40.dp
+            val horizontalGap = if (isSmallScreen) 6.dp else 10.dp
+            val titleSize = if (isSmallScreen) 26.sp else 30.sp
+
+            val nameToDisplay = if (viewModel.userName.isNullOrBlank()) "Explorer" else viewModel.userName
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Header Section
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_logo),
-                    contentDescription = "Word Me Logo",
-                    modifier = Modifier.size(logoSize)
-                )
+                // Left part: Logo and Title text in a horizontal row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo),
+                        contentDescription = "Word Me Logo",
+                        modifier = Modifier.size(logoSize)
+                    )
 
-                Spacer(modifier = Modifier.width(horizontalGap))
+                    Spacer(modifier = Modifier.width(horizontalGap))
 
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = LogoTeal, fontWeight = FontWeight.Bold)) {
+                                append("Word ")
+                            }
+                            withStyle(style = SpanStyle(color = AccentBlue, fontWeight = FontWeight.Bold)) {
+                                append("Me!")
+                            }
+                        },
+                        fontSize = titleSize,
+                        fontFamily = FontFamily.Serif
+                    )
+                }
+
+                // Right part: Hi (Name)
                 Text(
-                    text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = LogoTeal, fontWeight = FontWeight.Bold)) {
-                            append("Word ")
-                        }
-                        withStyle(style = SpanStyle(color = AccentBlue, fontWeight = FontWeight.Bold)) {
-                            append("Me!")
-                        }
-                    },
-                    fontSize = titleSize,
-                    fontFamily = FontFamily.Serif
+                    text = "Hi $nameToDisplay",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AccentBlue,
+                    modifier = Modifier.clickable { showEditNameDialog = true }
                 )
             }
 
-            // Right part: Hi (Name)
-            Text(
-                text = "Hi $nameToDisplay",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = AccentBlue,
-                modifier = Modifier.clickable { showEditNameDialog = true }
+            // Progress Overview
+            ProgressOverview(
+                days = viewModel.dayCount,
+                words = viewModel.wordsLearnedCount,
+                streak = viewModel.streakCount
             )
+
+            if (viewModel.rehearsalWord != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, SoftBlueBorder),
+                    colors = CardDefaults.cardColors(containerColor = LightBlue),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "🔄",
+                                fontSize = 16.sp
+                            )
+                            Text(
+                                text = "Rehearsal Mode: Refreshing memory",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NavyPrimary
+                            )
+                        }
+                        Text(
+                            text = "Exit",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AccentBlue,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable { viewModel.exitRehearsal() }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            // Word Card
+            WordCard(
+                word = viewModel.currentWord,
+                showExampleTranslations = viewModel.showExampleTranslations,
+                onToggleExampleTranslations = { viewModel.toggleExampleTranslations() },
+                onSpeakFemale = { wordToSpeak -> audioManager.playWord(wordToSpeak, female = true) },
+                onSpeakMale = { wordToSpeak -> audioManager.playWord(wordToSpeak, female = false) },
+                onMoreSentencesClick = { viewModel.generateMoreSentences() },
+                onAnotherWordClick = { viewModel.nextWord() },
+                learningGoal = viewModel.currentWord.goalTags.firstOrNull { tag ->
+                    viewModel.learningGoals.any { goalName ->
+                        val goalEntry = LearningGoal.fromDisplayName(goalName)
+                        tag.equals(goalEntry?.displayName, ignoreCase = true) || tag.equals(goalEntry?.category, ignoreCase = true)
+                    }
+                }
+                    ?: viewModel.currentWord.goalTags.firstOrNull()
+                    ?: viewModel.learningGoals.firstOrNull()
+                    ?: ""
+            )
+
+            // Your Turn Card
+            YourTurnCard(
+                word = viewModel.currentWord.word,
+                sentenceText = viewModel.sentenceText,
+                onSentenceChange = { viewModel.onSentenceTextChange(it) },
+                onCheckSentence = { viewModel.checkSentence() },
+                isCompleted = viewModel.isChecked
+            )
+
+            // Extra space at bottom to accommodate floating action bar if visible
+            Spacer(modifier = Modifier.height(if (viewModel.isChecked && !showFeedbackDialog) 84.dp else 16.dp))
         }
 
-        // Progress Overview
-        ProgressOverview(
-            days = viewModel.dayCount,
-            words = viewModel.wordsLearnedCount,
-            streak = viewModel.streakCount
-        )
-
-
-
-        if (viewModel.rehearsalWord != null) {
+        // Floating / Docked "Ready for next word? Word Me!" action banner when user hits Later
+        AnimatedVisibility(
+            visible = viewModel.isChecked && !showFeedbackDialog,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, SoftBlueBorder),
-                colors = CardDefaults.cardColors(containerColor = LightBlue),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                border = BorderStroke(1.5.dp, SoftBlueBorder),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
@@ -203,63 +291,44 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "🔄",
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "Rehearsal Mode: Refreshing memory",
+                            text = if (viewModel.rehearsalWord != null) "Rehearsal done! 👏" else "Word mastered! 🎉",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = NavyPrimary
                         )
+                        Text(
+                            text = "Ready for your next word?",
+                            fontSize = 12.sp,
+                            color = MutedBlueGrey
+                        )
                     }
-                    Text(
-                        text = "Exit",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AccentBlue,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable { viewModel.exitRehearsal() }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (viewModel.rehearsalWord != null) {
+                                viewModel.exitRehearsal()
+                            } else {
+                                viewModel.nextWord()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AccentBlue,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "Word Me! ✨",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
-
-        // Word Card
-        WordCard(
-            word = viewModel.currentWord,
-            showExampleTranslations = viewModel.showExampleTranslations,
-            onToggleExampleTranslations = { viewModel.toggleExampleTranslations() },
-            onSpeakFemale = { wordToSpeak -> audioManager.playWord(wordToSpeak, female = true) },
-            onSpeakMale = { wordToSpeak -> audioManager.playWord(wordToSpeak, female = false) },
-            onMoreSentencesClick = { viewModel.generateMoreSentences() },
-            onAnotherWordClick = { viewModel.nextWord() },
-            learningGoal = viewModel.currentWord.goalTags.firstOrNull { tag ->
-                viewModel.learningGoals.any { goalName ->
-                    val goalEntry = LearningGoal.fromDisplayName(goalName)
-                    tag.equals(goalEntry?.displayName, ignoreCase = true) || tag.equals(goalEntry?.category, ignoreCase = true)
-                }
-            }
-                ?: viewModel.currentWord.goalTags.firstOrNull()
-                ?: viewModel.learningGoals.firstOrNull()
-                ?: ""
-        )
-
-        // Your Turn Card
-        YourTurnCard(
-            word = viewModel.currentWord.word,
-            sentenceText = viewModel.sentenceText,
-            onSentenceChange = { viewModel.onSentenceTextChange(it) },
-            onCheckSentence = { viewModel.checkSentence() },
-            isCompleted = viewModel.isChecked
-        )
 
         // Feedback Result popup dialog (shown only after checking)
         if (showFeedbackDialog) {
@@ -280,52 +349,92 @@ fun HomeScreen(
                     ) {
                         FeedbackCard(
                             word = viewModel.currentWord.word,
-                            score = viewModel.currentSentenceScore
+                            score = viewModel.currentSentenceScore,
+                            recommendations = viewModel.currentSentenceRecommendations,
+                            exampleSentence = viewModel.currentWord.examples.firstOrNull() ?: ""
                         )
 
-                        Text(
-                            text = if (viewModel.rehearsalWord != null) "Exit rehearsal and learn a new word?" else "Ready for another word?",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = NavyPrimary,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                        )
+                        val isPassed = viewModel.currentSentenceScore >= 7
+                        val isRehearsal = viewModel.rehearsalWord != null
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            // Later button (closes dialog)
-                            Button(
-                                onClick = { showFeedbackDialog = false },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = LightBlue,
-                                    contentColor = AccentBlue
-                                ),
-                                shape = RoundedCornerShape(12.dp),
+                        if (isPassed) {
+                            Text(
+                                text = if (isRehearsal) "Exit rehearsal and learn a new word?" else "Ready for another word?",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = NavyPrimary,
+                                textAlign = TextAlign.Center,
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .height(40.dp)
-                            ) {
-                                Text(
-                                    text = "Later",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp)
+                            )
 
-                            // Word Me! button (closes dialog and triggers nextWord)
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Later button (closes dialog and shows polite toast confirmation)
+                                Button(
+                                    onClick = {
+                                        showFeedbackDialog = false
+                                        Toast.makeText(
+                                            context,
+                                            "Great work! See you later, or tap 'Word Me!' anytime ✨",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = LightBlue,
+                                        contentColor = AccentBlue
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(42.dp)
+                                ) {
+                                    Text(
+                                        text = "Later",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                // Word Me! button (closes dialog and triggers nextWord)
+                                Button(
+                                    onClick = {
+                                        showFeedbackDialog = false
+                                        if (viewModel.rehearsalWord != null) {
+                                            viewModel.exitRehearsal()
+                                        } else {
+                                            viewModel.nextWord()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = AccentBlue,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(42.dp)
+                                ) {
+                                    Text(
+                                        text = "Word Me! ✨",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        } else {
+                            // Score is less than 7/10: forced to try again with recommendations
+                            Spacer(modifier = Modifier.height(4.dp))
+
                             Button(
                                 onClick = {
                                     showFeedbackDialog = false
-                                    if (viewModel.rehearsalWord != null) {
-                                        viewModel.exitRehearsal()
-                                    } else {
-                                        viewModel.nextWord()
-                                    }
+                                    viewModel.retrySentence()
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = AccentBlue,
@@ -333,12 +442,12 @@ fun HomeScreen(
                                 ),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .height(40.dp)
+                                    .fillMaxWidth()
+                                    .height(44.dp)
                             ) {
                                 Text(
-                                    text = "Word Me! ✨",
-                                    fontSize = 13.sp,
+                                    text = "Try Again ↺",
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -347,7 +456,5 @@ fun HomeScreen(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

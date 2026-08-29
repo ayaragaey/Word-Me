@@ -69,7 +69,8 @@ import com.example.wordme.ui.theme.SoftBlueBorder
 enum class SortOption(val displayName: String) {
     DATE_LEARNED("Date Learned"),
     ALPHA_AZ("Alphabetical A-Z"),
-    ALPHA_ZA("Alphabetical Z-A")
+    ALPHA_ZA("Alphabetical Z-A"),
+    BY_CATEGORY("Sort by Category")
 }
 
 @Composable
@@ -115,6 +116,12 @@ fun MyWordsScreen(
             }
             SortOption.ALPHA_ZA -> {
                 filteredWords.sortedByDescending { it.word.lowercase() }
+            }
+            SortOption.BY_CATEGORY -> {
+                filteredWords.sortedWith(
+                    compareBy<Word> { getWordLearningGoal(it).lowercase() }
+                        .thenBy { it.word.lowercase() }
+                )
             }
         }
     }
@@ -377,6 +384,32 @@ fun MyWordsScreen(
                         }
                     }
                 }
+            } else if (selectedSort == SortOption.BY_CATEGORY) {
+                // Grouped by Category
+                val grouped = sortedWords.groupBy { getWordLearningGoal(it).uppercase() }
+                grouped.forEach { (header, wordsInGroup) ->
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = header,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MutedBlueGrey,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                        HorizontalDivider(color = SoftBlueBorder.copy(alpha = 0.5f), thickness = 1.dp)
+
+                        wordsInGroup.forEach { word ->
+                            WordEntryItem(
+                                word = word,
+                                onRehearseClick = onRehearseWord
+                            )
+                            HorizontalDivider(color = SoftBlueBorder.copy(alpha = 0.3f), thickness = 0.5.dp)
+                        }
+                    }
+                }
             } else {
                 // Alphabetical List (Not grouped)
                 Column(
@@ -418,7 +451,7 @@ fun WordEntryItem(
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
@@ -431,8 +464,8 @@ fun WordEntryItem(
                 if (goal.isNotBlank()) {
                     LearningGoalTag(
                         goal = goal,
-                        fontSize = 8.sp,
-                        contentPadding = PaddingValues(horizontal = 5.dp, vertical = 1.5.dp)
+                        fontSize = 7.sp,
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 1.dp)
                     )
                 }
             }
@@ -443,11 +476,13 @@ fun WordEntryItem(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        OutlinedButton(
+        Button(
             onClick = { onRehearseClick(word) },
-            border = BorderStroke(1.dp, AccentBlue),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentBlue),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AccentBlue,
+                contentColor = Color.White
+            ),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
             modifier = Modifier.height(32.dp)
         ) {

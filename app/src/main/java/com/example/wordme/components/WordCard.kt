@@ -173,18 +173,24 @@ fun WordCard(
                         color = NavyPrimary,
                         letterSpacing = 0.5.sp
                     )
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Another Word",
-                        tint = AccentBlue,
+                    Box(
                         modifier = Modifier
-                            .size(20.dp)
-                            .clickable { onAnotherWordClick() }
-                    )
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .clickable { onAnotherWordClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Another Word",
+                            tint = AccentBlue,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
 
                 if (!goalToDisplay.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     LearningGoalTag(goal = goalToDisplay)
                 }
             }
@@ -425,8 +431,8 @@ fun getWordLearningGoal(word: Word, preferredGoal: String? = null): String {
 fun LearningGoalTag(
     goal: String,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = 8.sp,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 5.dp, vertical = 1.5.dp)
+    fontSize: TextUnit = 7.sp,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 4.dp, vertical = 1.dp)
 ) {
     if (goal.isBlank()) return
 

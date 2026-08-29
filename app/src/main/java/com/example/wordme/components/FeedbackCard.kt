@@ -43,40 +43,49 @@ import com.example.wordme.ui.theme.StreakAccent
 fun FeedbackCard(
     word: String,
     score: Int,
+    recommendations: List<String> = emptyList(),
+    exampleSentence: String = "",
     modifier: Modifier = Modifier
 ) {
+    val isPassed = score >= 7
+
+    val themeColor = if (isPassed) PositiveFeedbackText else Color(0xFFEA580C)
+    val bgColor = if (isPassed) PositiveFeedbackBg else Color(0xFFFFF7ED)
+    val borderColor = if (isPassed) PositiveFeedbackText.copy(alpha = 0.15f) else Color(0xFFFED7AA)
+
     val feedbackTitle = when {
         score >= 8 -> "Great job! 🎉"
-        score >= 5 -> "Good effort! 👍"
-        else -> "Keep practicing! 📝"
+        score == 7 -> "Well done! 👍"
+        score >= 5 -> "Almost there! ✍️"
+        else -> "Needs Improvement 📝"
     }
 
     val feedbackDetails = when {
         score >= 8 -> "Your sentence is grammatically correct and you used '${word.lowercase()}' naturally."
-        score >= 5 -> "You used '${word.lowercase()}' in the sentence. Try to make it a bit more natural or grammatically complete."
-        else -> "Try to write a complete sentence using '${word.lowercase()}' to practice."
+        score == 7 -> "Good sentence! You used '${word.lowercase()}' correctly."
+        else -> "You need at least 7/10 to pass. Review the recommendations below and try again!"
     }
 
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, PositiveFeedbackText.copy(alpha = 0.15f)),
-        colors = CardDefaults.cardColors(containerColor = PositiveFeedbackBg), // Pale green background
+        border = BorderStroke(1.dp, borderColor),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Main Row: Circular progress score and text
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Score circle
                 Box(
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(60.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Canvas(modifier = Modifier.fillMaxSize()) {
@@ -86,7 +95,7 @@ fun FeedbackCard(
                         )
                         val sweep = (score.toFloat() / 10f) * 360f
                         drawArc(
-                            color = PositiveFeedbackText,
+                            color = themeColor,
                             startAngle = -90f,
                             sweepAngle = sweep,
                             useCenter = false,
@@ -96,9 +105,9 @@ fun FeedbackCard(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "$score",
-                            fontSize = 18.sp,
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = PositiveFeedbackText
+                            color = themeColor
                         )
                         Text(
                             text = "/10",
@@ -113,16 +122,16 @@ fun FeedbackCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = feedbackTitle,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PositiveFeedbackText
+                        color = themeColor
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = feedbackDetails,
-                        fontSize = 13.sp,
+                        fontSize = 12.5.sp,
                         color = NavyPrimary,
-                        lineHeight = 17.sp
+                        lineHeight = 16.5.sp
                     )
                 }
             }
@@ -138,48 +147,127 @@ fun FeedbackCard(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(if (filled) PositiveFeedbackText else Color.Transparent)
+                            .background(if (filled) themeColor else Color.Transparent)
                             .border(
                                 width = 1.dp,
-                                color = if (filled) PositiveFeedbackText else PositiveFeedbackText.copy(alpha = 0.4f),
+                                color = if (filled) themeColor else themeColor.copy(alpha = 0.3f),
                                 shape = CircleShape
                             )
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "$score/10",
-                    fontSize = 12.sp,
+                    text = if (isPassed) "$score/10 (Passed)" else "$score/10 (7/10 required)",
+                    fontSize = 11.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = PositiveFeedbackText
+                    color = themeColor
                 )
             }
 
-            // Tip container box (Inner Card with white bg)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(CardBackground)
-                    .padding(12.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Recommendations List if score < 7
+            if (!isPassed && recommendations.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(CardBackground)
+                        .padding(12.dp)
                 ) {
-                    Icon(
-                        imageVector = WordMeIcons.Lightbulb,
-                        contentDescription = "Tip",
-                        tint = StreakAccent,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = "Try to make your sentence as natural as possible.",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NavyPrimary,
-                        lineHeight = 17.sp
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(text = "💡", fontSize = 14.sp)
+                            Text(
+                                text = "How to improve:",
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NavyPrimary
+                            )
+                        }
+                        recommendations.forEach { rec ->
+                            Row(
+                                modifier = Modifier.padding(start = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = "•",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = themeColor
+                                )
+                                Text(
+                                    text = rec,
+                                    fontSize = 12.sp,
+                                    color = NavyPrimary,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Example Sentence Tip Box (if available and score < 7)
+            if (!isPassed && exampleSentence.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(CardBackground.copy(alpha = 0.8f))
+                        .padding(10.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(text = "✨", fontSize = 13.sp)
+                        Column {
+                            Text(
+                                text = "Example for inspiration:",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MutedBlueGrey
+                            )
+                            Text(
+                                text = "\"$exampleSentence\"",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = NavyPrimary,
+                                lineHeight = 16.sp
+                            )
+                        }
+                    }
+                }
+            } else if (isPassed) {
+                // Tip container box for passing sentence
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(CardBackground)
+                        .padding(10.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = WordMeIcons.Lightbulb,
+                            contentDescription = "Tip",
+                            tint = StreakAccent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Great formulation! Keep applying new words in your daily thoughts.",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = NavyPrimary,
+                            lineHeight = 16.sp
+                        )
+                    }
                 }
             }
         }

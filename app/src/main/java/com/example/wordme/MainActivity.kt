@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.wordme.components.BottomNavigationBar
+import com.example.wordme.components.DailyTargetCelebrationDialog
 import com.example.wordme.components.LevelUpDialog
 import com.example.wordme.components.NamePromptDialog
 import com.example.wordme.components.StreakCelebrationDialog
@@ -93,6 +94,13 @@ class MainActivity : ComponentActivity() {
                             is com.example.wordme.ui.Celebration.StreakMilestone -> {
                                 StreakCelebrationDialog(
                                     streak = celebration.days,
+                                    userName = currentUserName ?: "Explorer",
+                                    onDismiss = { viewModel.dismissCurrentCelebration() }
+                                )
+                            }
+                            is com.example.wordme.ui.Celebration.DailyTargetReached -> {
+                                DailyTargetCelebrationDialog(
+                                    target = celebration.target,
                                     userName = currentUserName ?: "Explorer",
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )

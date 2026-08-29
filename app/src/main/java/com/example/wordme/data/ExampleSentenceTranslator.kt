@@ -190,6 +190,150 @@ object ExampleSentenceTranslator {
         val lowerSentence = trimmed.lowercase()
 
         when {
+            lowerSentence.startsWith("you should ") && lowerSentence.contains("the instructions carefully before starting") ->
+                return "يجب عليك $cleanAr التعليمات بعناية قبل البدء."
+
+            lowerSentence.startsWith("she decided to ") && lowerSentence.contains("a detailed plan for the upcoming project") ->
+                return "قررت $cleanAr خطة مفصلة للمشروع القادم."
+
+            lowerSentence.startsWith("they worked together to ") && lowerSentence.contains("the overall quality of the service") ->
+                return "عملوا معاً لـ $cleanAr الجودة العامة للخدمة."
+
+            lowerSentence.startsWith("we need to ") && lowerSentence.contains("the problem as soon as possible") ->
+                return "نحن بحاجة إلى $cleanAr المشكلة في أقرب وقت ممكن."
+
+            lowerSentence.startsWith("he tried to ") && lowerSentence.contains("new methods to improve") ->
+                return "حاول $cleanAr أساليب جديدة لتحسين كفاءة الفريق."
+
+            lowerSentence.startsWith("the team was able to ") && lowerSentence.contains("the task ahead of schedule") ->
+                return "تمكن الفريق من $cleanAr المهمة قبل الموعد المحدد."
+
+            lowerSentence.startsWith("he always makes sure to ") && lowerSentence.contains("on time for important meetings") ->
+                return "يحرص دائماً على أن $cleanAr في الوقت المحدد للمواعيد المهمة."
+
+            lowerSentence.startsWith("it takes patience and practice to ") && lowerSentence.contains("with confidence") ->
+                return "يتطلب الأمر صبراً وممارسة لـ $cleanAr بثقة."
+
+            lowerSentence.startsWith("she made an effort to ") && lowerSentence.contains("regularly throughout the week") ->
+                return "بذلت جهداً لـ $cleanAr بانتظام طوال الأسبوع."
+
+            lowerSentence.startsWith("they gathered all the resources needed to ") && lowerSentence.contains("successfully") ->
+                return "جمعوا جميع الموارد اللازمة لـ $cleanAr بنجاح."
+
+            lowerSentence.startsWith("the final report provided a ") && lowerSentence.contains("overview of the results") ->
+                return "قدم التقرير النهائي نظرة عامة $cleanAr على النتائج."
+
+            lowerSentence.startsWith("the presentation was very ") && lowerSentence.contains("and well received by the audience") ->
+                return "كان العرض التقديمي $cleanAr للغاية ولاقى استحسان الجمهور."
+
+            lowerSentence.startsWith("understanding the value of ") ->
+                return "إن فهم قيمة $cleanAr يمكن أن يساعد في العديد من المواقف."
+
+            lowerSentence.startsWith("they spent time discussing the importance of ") ->
+                return "أمضوا وقتاً في مناقشة أهمية $cleanAr."
+
+            lowerSentence.startsWith("the concept of ") && lowerSentence.contains("plays an important role") ->
+                return "يلعب مفهوم $cleanAr دوراً مهماً في الحياة اليومية."
+
+            lowerSentence.startsWith("she shared some interesting thoughts about ") ->
+                return "شاركت بعض الأفكار المثيرة للاهتمام حول $cleanAr."
+
+            lowerSentence.startsWith("he wanted to learn more about ") && lowerSentence.contains("before making a decision") ->
+                return "أراد معرفة المزيد عن $cleanAr قبل اتخاذ القرار."
+
+            lowerSentence.startsWith("recent discussions focused on the impact of ") ->
+                return "ركزت المناقشات الأخيرة على تأثير $cleanAr."
+
+            lowerSentence.startsWith("everyone agreed that ") && lowerSentence.contains("deserves careful attention") ->
+                return "اتفق الجميع على أن $cleanAr يستحق اهتماماً دقيقاً."
+
+            lowerSentence.startsWith("we need to consider how ") && lowerSentence.contains("affects our overall plans") ->
+                return "نحن بحاجة إلى النظر في كيفية تأثير $cleanAr على خططنا العامة."
+
+            lowerSentence.startsWith("she made a conscious effort to ") ->
+                return "بذلت جهداً واعياً لـ $cleanAr كلما استطاعت."
+
+            lowerSentence.startsWith("it takes time and patience to learn how to ") ->
+                return "يتطلب الأمر وقتاً وصبراً لتعلّم كيفية $cleanAr بفعالية."
+
+            lowerSentence.startsWith("they were encouraged to ") ->
+                return "تم تشجيعهم على أن $cleanAr قدر الإمكان."
+
+            lowerSentence.startsWith("you need to know the right moment to ") ->
+                return "عليك أن تعرف اللحظة المناسبة لـ $cleanAr."
+
+            lowerSentence.startsWith("he was always ready to ") ->
+                return "كان دائماً على استعداد لـ $cleanAr عند الحاجة."
+
+            lowerSentence.startsWith("learning how to ") && lowerSentence.contains("properly is a valuable skill") ->
+                return "إن تعلم كيفية $cleanAr بشكل صحيح هو مهارة قيّمة."
+
+            lowerSentence.startsWith("we decided that it was best to ") ->
+                return "قررنا أنه من الأفضل $cleanAr دون تأخير."
+
+            lowerSentence.startsWith("she taught him how to ") ->
+                return "علمته كيفية $cleanAr خطوة بخطوة."
+
+            lowerSentence.startsWith("finding a ") && lowerSentence.contains("approach was key to their success") ->
+                return "كان إيجاد نهج $cleanAr مفتاحاً لنجاحهم."
+
+            lowerSentence.startsWith("the team remained ") && lowerSentence.contains("despite the challenging circumstances") ->
+                return "ظل الفريق $cleanAr على الرغم من الظروف الصعبة."
+
+            lowerSentence.startsWith("it proved to be a particularly ") ->
+                return "لقد أثبتت أنها تجربة $cleanAr بشكل خاص للجميع."
+
+            lowerSentence.startsWith("she gave a very ") && lowerSentence.contains("response during the discussion") ->
+                return "قدمت استجابة $cleanAr للغاية خلال المناقشة."
+
+            lowerSentence.startsWith("they are searching for a more ") ->
+                return "إنهم يبحثون عن طريقة أكثر $cleanAr للتعامل مع هذا."
+
+            lowerSentence.startsWith("the situation became increasingly ") ->
+                return "أصبح الموقف $cleanAr بشكل متزايد بمرور الوقت."
+
+            lowerSentence.startsWith("he is known for his ") && lowerSentence.contains("attitude in difficult moments") ->
+                return "هو معروف بموقفه الـ$cleanAr في اللحظات الصعبة."
+
+            lowerSentence.startsWith("it was clear that the outcome would be ") ->
+                return "كان من الواضح أن النتيجة ستكون $cleanAr."
+
+            lowerSentence.startsWith("she managed to handle the situation ") ->
+                return "تمكنت من التعامل مع الموقف بـ $cleanAr."
+
+            lowerSentence.startsWith("the work was completed ") && lowerSentence.contains("meeting all requirements") ->
+                return "تم إنجاز العمل بـ $cleanAr مستوفياً جميع المتطلبات."
+
+            lowerSentence.startsWith("he responded ") && lowerSentence.contains("when asked about the plan") ->
+                return "أجاب بـ $cleanAr عندما سُئل عن الخطة."
+
+            lowerSentence.startsWith("the system operates ") && lowerSentence.contains("even during peak hours") ->
+                return "يعمل النظام بـ $cleanAr حتى في ساعات الذروة."
+
+            lowerSentence.startsWith("they performed ") && lowerSentence.contains("throughout the entire project") ->
+                return "أدوا عملهم بـ $cleanAr طوال المشروع بأكمله."
+
+            lowerSentence.startsWith("she explained the details ") && lowerSentence.contains("so everyone could understand") ->
+                return "شرحت التفاصيل بـ $cleanAr حتى يتمكن الجميع من الفهم."
+
+            lowerSentence.startsWith("he acted ") && lowerSentence.contains("to resolve the misunderstanding") ->
+                return "تصرف بـ $cleanAr لحل سوء التفاهم."
+
+            lowerSentence.startsWith("they discussed how ") && lowerSentence.contains("influences the final outcome") ->
+                return "ناقشوا كيف يؤثر $cleanAr على النتيجة النهائية."
+
+            lowerSentence.startsWith("understanding the role of ") && lowerSentence.contains("is essential for progress") ->
+                return "إن فهم دور $cleanAr أمر أساسي للتقدم."
+
+            lowerSentence.startsWith("she wrote a thoughtful piece about ") ->
+                return "كتبت مقالاً عميقاً حول $cleanAr."
+
+            lowerSentence.startsWith("many factors, including ") && lowerSentence.contains("contributed to the result") ->
+                return "ساهمت العديد من العوامل، بما في ذلك $cleanAr، في النتيجة."
+
+            lowerSentence.startsWith("he shared a clear perspective regarding ") ->
+                return "شارك وجهة نظر واضحة بخصوص $cleanAr."
+
             lowerSentence.startsWith("we discussed the ") && lowerSentence.endsWith(" during the lesson.") ->
                 return "ناقشنا $cleanArAl خلال الدرس."
 

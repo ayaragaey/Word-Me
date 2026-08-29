@@ -31,6 +31,7 @@ sealed interface Celebration {
     data class LevelUp(val levelNumber: Int, val levelName: String, val wordsRequired: Int) : Celebration
     data class WordMilestone(val count: Int) : Celebration
     data class StreakMilestone(val days: Int) : Celebration
+    data class DailyTargetReached(val target: Int, val date: String) : Celebration
 }
 
 class WordViewModel(application: Application) : AndroidViewModel(application) {
@@ -68,15 +69,36 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     var currentWordIndex by mutableStateOf(0)
         private set
 
+    val learnedWordIdsSet: Set<Int>
+        get() = streakManager.learnedWordIds.mapNotNull {
+            it.split(":").firstOrNull()?.toIntOrNull()
+        }.toSet()
+
     private fun loadWordsForCurrentGoals() {
         val selectedGoalEntries = LearningGoal.entries.filter { goal ->
             learningGoals.contains(goal.displayName) || learningGoals.contains(goal.category)
         }
-        val loaded = WordRepository.getWordsForGoals(
+        val allGoalWords = WordRepository.getWordsForGoals(
             getApplication<Application>().applicationContext,
             selectedGoalEntries
         )
-        words = if (loaded.isNotEmpty()) loaded.shuffled() else WordRepository.loadWords(getApplication<Application>().applicationContext).shuffled()
+        val learnedIds = learnedWordIdsSet
+        val unlearnedGoalWords = allGoalWords.filter { it.id !in learnedIds }
+
+        words = if (unlearnedGoalWords.isNotEmpty()) {
+            unlearnedGoalWords.shuffled()
+        } else {
+            // Fallback: If all words in the selected goal are completed, check unlearned words across all categories
+            val allWords = WordRepository.loadWords(getApplication<Application>().applicationContext)
+            val globalUnlearned = allWords.filter { it.id !in learnedIds }
+            if (globalUnlearned.isNotEmpty()) {
+                globalUnlearned.shuffled()
+            } else if (allGoalWords.isNotEmpty()) {
+                allGoalWords.shuffled()
+            } else {
+                allWords.shuffled()
+            }
+        }
     }
 
     fun toggleLearningGoal(goal: String) {
@@ -112,11 +134,6 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         loadWordsForCurrentGoals()
         currentWordIndex = 0
         WidgetUpdater.updateWidget(getApplication())
-    }
-
-    init {
-        loadWordsForCurrentGoals()
-        android.util.Log.d("WORD_COUNT", "Loaded words: ${words.size}")
     }
 
     val currentWord: Word
@@ -189,6 +206,12 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     val wordsLearnedCount: Int
         get() = learnedWords.size
 
+    val wordsLearnedTodayCount: Int
+        get() {
+            val todayStr = java.time.LocalDate.now().toString()
+            return streakManager.learnedWordIds.count { it.endsWith(":$todayStr") }
+        }
+
     val levelDetails: LevelDetails
         get() = LevelUtils.calculateLevelDetails(wordsLearnedCount)
 
@@ -221,9 +244,16 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     var currentSentenceScore by mutableStateOf(0)
         private set
 
+    // Recommendations for the evaluated sentence
+    var currentSentenceRecommendations by mutableStateOf<List<String>>(emptyList())
+        private set
+
     init {
         // Reconstruct learned words list on launch
         reconstructLearnedWords()
+
+        loadWordsForCurrentGoals()
+        android.util.Log.d("WORD_COUNT", "Loaded unlearned words: ${words.size}")
 
         checkStreakOnLaunch()
         initializeAcknowledgedCelebrationsIfNeeded()
@@ -348,17 +378,19 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // Sort: LevelUp -> WordMilestone -> StreakMilestone
+        // Sort: LevelUp -> WordMilestone -> StreakMilestone -> DailyTargetReached
         val sorted = newCelebrations.sortedWith(compareBy(
             { when(it) {
                 is Celebration.LevelUp -> 1
                 is Celebration.WordMilestone -> 2
                 is Celebration.StreakMilestone -> 3
+                is Celebration.DailyTargetReached -> 4
             }},
             { when(it) {
                 is Celebration.LevelUp -> it.levelNumber
                 is Celebration.WordMilestone -> it.count
                 is Celebration.StreakMilestone -> it.days
+                is Celebration.DailyTargetReached -> it.target
             }}
         ))
         
@@ -396,28 +428,78 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         showExampleTranslations = false
     }
 
-    fun evaluateSentence(sentence: String, word: String): Int {
+    data class EvaluationResult(
+        val score: Int,
+        val recommendations: List<String>
+    )
+
+    fun evaluateSentenceDetailed(sentence: String, word: String): EvaluationResult {
         val trimmed = sentence.trim()
-        if (trimmed.isEmpty()) return 0
-        val containsWord = trimmed.contains(word, ignoreCase = true)
-        if (!containsWord) {
-            return 1 + (trimmed.length % 5)
+        if (trimmed.isEmpty()) {
+            return EvaluationResult(
+                score = 0,
+                recommendations = listOf("Please write a sentence using '${word.lowercase()}'.")
+            )
         }
-        
-        var score = 7
-        if (trimmed[0].isUpperCase()) score += 1
-        if (trimmed.endsWith(".") || trimmed.endsWith("!") || trimmed.endsWith("?")) score += 1
-        if (trimmed.split("\\s+".toRegex()).size >= 5) score += 1
-        
-        return score.coerceIn(1, 10)
+
+        val recs = mutableListOf<String>()
+        val wordsList = trimmed.split("\\s+".toRegex()).filter { it.isNotBlank() }
+        val containsWord = trimmed.contains(word, ignoreCase = true)
+
+        if (!containsWord) {
+            recs.add("Include the target word '${word.lowercase()}' in your sentence.")
+        }
+
+        if (wordsList.size < 4) {
+            recs.add("Write a more complete sentence with at least 4 to 5 words.")
+        }
+
+        val startsWithCapital = trimmed.firstOrNull()?.isUpperCase() == true
+        if (!startsWithCapital) {
+            recs.add("Start your sentence with a capital letter.")
+        }
+
+        val endsWithPunctuation = trimmed.endsWith(".") || trimmed.endsWith("!") || trimmed.endsWith("?")
+        if (!endsWithPunctuation) {
+            recs.add("End your sentence with punctuation (e.g. . or ! or ?).")
+        }
+
+        // Calculate score
+        val score: Int = if (!containsWord) {
+            var s = 2
+            if (wordsList.size >= 4) s += 1
+            s
+        } else if (wordsList.size < 3) {
+            4
+        } else {
+            var s = 7 // Base passing score when target word is present in a decent sentence
+            if (startsWithCapital) s += 1
+            if (endsWithPunctuation) s += 1
+            if (wordsList.size >= 6) s += 1
+            if (wordsList.size == 3 && s > 6) s = 6
+            s.coerceIn(1, 10)
+        }
+
+        return EvaluationResult(score = score, recommendations = recs)
+    }
+
+    fun evaluateSentence(sentence: String, word: String): Int {
+        return evaluateSentenceDetailed(sentence, word).score
     }
 
     fun checkSentence() {
         if (sentenceText.isBlank() || isChecked) return
 
-        val score = evaluateSentence(sentenceText, currentWord.word)
+        val eval = evaluateSentenceDetailed(sentenceText, currentWord.word)
+        val score = eval.score
         currentSentenceScore = score
+        currentSentenceRecommendations = eval.recommendations
         isChecked = true
+
+        // If score is less than 7, user must retry; do NOT record as completed yet
+        if (score < 7) {
+            return
+        }
 
         // Update persistent sentences written
         streakManager.sentencesWritten = streakManager.sentencesWritten + 1
@@ -478,6 +560,12 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
+            // Daily Target Reached Celebration
+            val dailyKey = "daily_target_$todayStr"
+            if (wordsLearnedTodayCount >= dailyTarget && !streakManager.acknowledgedCelebrations.contains(dailyKey)) {
+                newCelebrations.add(Celebration.DailyTargetReached(dailyTarget, todayStr))
+            }
+
             if (newCelebrations.isNotEmpty()) {
                 pendingCelebrations = pendingCelebrations + newCelebrations
             }
@@ -494,13 +582,37 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun retrySentence() {
+        isChecked = false
+        currentSentenceScore = 0
+        currentSentenceRecommendations = emptyList()
+    }
+
     fun nextWord() {
         if (rehearsalWord != null) {
             rehearsalWord = null
         }
-        currentWordIndex = (currentWordIndex + 1) % words.size
+
+        val learnedIds = learnedWordIdsSet
+        val remainingUnlearned = words.filter { it.id !in learnedIds }
+
+        if (remainingUnlearned.isNotEmpty()) {
+            val wasFiltered = remainingUnlearned.size < words.size
+            words = remainingUnlearned
+            currentWordIndex = if (wasFiltered) {
+                currentWordIndex % words.size
+            } else {
+                (currentWordIndex + 1) % words.size
+            }
+        } else {
+            loadWordsForCurrentGoals()
+            currentWordIndex = if (words.isNotEmpty()) (currentWordIndex + 1) % words.size else 0
+        }
+
         sentenceText = ""
         isChecked = false
+        currentSentenceScore = 0
+        currentSentenceRecommendations = emptyList()
         showExampleTranslations = false
     }
 
@@ -510,6 +622,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
             is Celebration.LevelUp -> "level_${current.levelNumber}"
             is Celebration.WordMilestone -> "word_${current.count}"
             is Celebration.StreakMilestone -> "streak_${current.days}"
+            is Celebration.DailyTargetReached -> "daily_target_${current.date}"
         }
         streakManager.acknowledgedCelebrations = streakManager.acknowledgedCelebrations + stableId
         pendingCelebrations = pendingCelebrations.drop(1)

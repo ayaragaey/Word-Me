@@ -37,6 +37,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -236,61 +237,119 @@ fun ProfileScreen(
         var dropdownExpanded by remember { mutableStateOf(false) }
         Box(modifier = Modifier.fillMaxWidth()) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { dropdownExpanded = true },
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, SoftBlueBorder),
                 colors = CardDefaults.cardColors(containerColor = CardBackground),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Column(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(text = "🎯", fontSize = 16.sp)
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Learning Goals",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = NavyPrimary
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { dropdownExpanded = true },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(text = "🎯", fontSize = 16.sp)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Learning Goals",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NavyPrimary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                viewModel.learningGoals.forEach { goalName ->
+                                    val goalEntry = LearningGoal.fromDisplayName(goalName)
+                                    val emoji = goalEntry?.emoji ?: ""
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .border(1.dp, SoftBlueBorder, RoundedCornerShape(6.dp))
+                                            .background(LightBlue.copy(alpha = 0.4f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = if (emoji.isNotEmpty()) "$emoji  $goalName" else goalName,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = NavyPrimary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Icon(
+                            imageVector = WordMeIcons.ChevronRight,
+                            contentDescription = null,
+                            tint = MutedBlueGrey,
+                            modifier = Modifier.size(16.dp)
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            viewModel.learningGoals.forEach { goalName ->
-                                val goalEntry = LearningGoal.fromDisplayName(goalName)
-                                val emoji = goalEntry?.emoji ?: ""
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .border(1.dp, SoftBlueBorder, RoundedCornerShape(6.dp))
-                                        .background(LightBlue.copy(alpha = 0.4f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = if (emoji.isNotEmpty()) "$emoji  $goalName" else goalName,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = NavyPrimary
+                    }
+
+                    // Daily Target Section
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 26.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "Daily Target:",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MutedBlueGrey
+                        )
+                        var targetDropdownExpanded by remember { mutableStateOf(false) }
+                        Box {
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(LightBlue.copy(alpha = 0.5f))
+                                    .clickable { targetDropdownExpanded = true }
+                                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = "${viewModel.dailyTarget} ${if (viewModel.dailyTarget == 1) "word" else "words"}",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AccentBlue
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = null,
+                                    tint = AccentBlue,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = targetDropdownExpanded,
+                                onDismissRequest = { targetDropdownExpanded = false }
+                            ) {
+                                listOf(1, 3, 5, 10, 15, 20).forEach { count ->
+                                    DropdownMenuItem(
+                                        text = { Text("$count ${if (count == 1) "word" else "words"}/day", fontSize = 13.sp) },
+                                        onClick = {
+                                            viewModel.updateDailyTarget(count)
+                                            targetDropdownExpanded = false
+                                        }
                                     )
                                 }
                             }
                         }
                     }
-                    Icon(
-                        imageVector = WordMeIcons.ChevronRight,
-                        contentDescription = null,
-                        tint = MutedBlueGrey,
-                        modifier = Modifier.size(16.dp)
-                    )
                 }
             }
 
