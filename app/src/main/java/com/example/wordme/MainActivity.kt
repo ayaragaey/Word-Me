@@ -28,7 +28,7 @@ import com.example.wordme.ui.theme.WordMeTheme
 import androidx.compose.material3.MaterialTheme
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: WordViewModel by viewModels()
+    private val viewModel: WordViewModel by viewModels { WordViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +37,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             WordMeTheme {
                 val currentUserName = viewModel.userName
-                if (currentUserName.isNullOrBlank()) {
+                if (!viewModel.onboardingCompleted) {
                     NamePromptDialog(
-                        onNameSubmitted = { name ->
-                            viewModel.updateUserName(name)
+                        onOnboardingCompleted = { name, goal ->
+                            viewModel.completeOnboarding(name, goal)
                         }
                     )
                 } else if (viewModel.isRecoveryActive) {
@@ -77,21 +77,21 @@ class MainActivity : ComponentActivity() {
                                     levelNumber = celebration.levelNumber,
                                     levelName = celebration.levelName,
                                     wordsRequired = celebration.wordsRequired,
-                                    userName = currentUserName,
+                                    userName = currentUserName ?: "Explorer",
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )
                             }
                             is com.example.wordme.ui.Celebration.WordMilestone -> {
                                 WordMilestoneCelebrationDialog(
                                     count = celebration.count,
-                                    userName = currentUserName,
+                                    userName = currentUserName ?: "Explorer",
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )
                             }
                             is com.example.wordme.ui.Celebration.StreakMilestone -> {
                                 StreakCelebrationDialog(
                                     streak = celebration.days,
-                                    userName = currentUserName,
+                                    userName = currentUserName ?: "Explorer",
                                     onDismiss = { viewModel.dismissCurrentCelebration() }
                                 )
                             }

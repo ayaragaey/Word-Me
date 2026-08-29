@@ -15,17 +15,17 @@ class StreakManager(context: Context) {
 
     // Current streak
     var currentStreak: Int
-        get() = prefs.getInt("current_streak", 5)
+        get() = prefs.getInt("current_streak", 0)
         set(value) = prefs.edit().putInt("current_streak", value).apply()
 
     // Day count (Total active days)
     var dayCount: Int
-        get() = prefs.getInt("day_count", 12)
+        get() = prefs.getInt("day_count", 0)
         set(value) = prefs.edit().putInt("day_count", value).apply()
 
     // Last active date (yyyy-MM-dd)
     var lastActiveDate: String?
-        get() = prefs.getString("last_active_date", LocalDate.now().minusDays(1).toString())
+        get() = prefs.getString("last_active_date", null)
         set(value) = prefs.edit().putString("last_active_date", value).apply()
 
     // Recovery deadline timestamp (epoch milliseconds)
@@ -45,7 +45,7 @@ class StreakManager(context: Context) {
 
     // Last shown streak celebration milestone
     var lastShownStreakCelebration: Int
-        get() = prefs.getInt("last_shown_streak_celebration", 3)
+        get() = prefs.getInt("last_shown_streak_celebration", 0)
         set(value) = prefs.edit().putInt("last_shown_streak_celebration", value).apply()
 
     // Celebration pending state
@@ -59,17 +59,17 @@ class StreakManager(context: Context) {
 
     // Learned word IDs
     var learnedWordIds: Set<String>
-        get() = prefs.getStringSet("learned_word_ids", null) ?: (101..227).map { it.toString() }.toSet()
+        get() = prefs.getStringSet("learned_word_ids", null) ?: emptySet()
         set(value) = prefs.edit().putStringSet("learned_word_ids", value).apply()
 
     // Sentences Written
     var sentencesWritten: Int
-        get() = prefs.getInt("sentences_written", 27)
+        get() = prefs.getInt("sentences_written", 0)
         set(value) = prefs.edit().putInt("sentences_written", value).apply()
 
     // Best Score (stored as an Int out of 10)
     var bestScoreValue: Int
-        get() = prefs.getInt("best_score_value", 9)
+        get() = prefs.getInt("best_score_value", 0)
         set(value) = prefs.edit().putInt("best_score_value", value).apply()
 
     // Acknowledged celebrations to prevent retroactive popups
@@ -108,8 +108,18 @@ class StreakManager(context: Context) {
 
     // Learning goals setting
     var learningGoals: Set<String>
-        get() = prefs.getStringSet("learning_goals", null) ?: setOf("Improve daily communication")
+        get() {
+            val saved = prefs.getStringSet("learning_goals", null)
+            val validGoals = LearningGoal.entries.map { it.displayName }.toSet()
+            val filtered = saved?.filter { it in validGoals }?.toSet()
+            return if (!filtered.isNullOrEmpty()) filtered else setOf(LearningGoal.EVERYDAY_ENGLISH.displayName)
+        }
         set(value) = prefs.edit().putStringSet("learning_goals", value).apply()
+
+    // Onboarding completed setting
+    var onboardingCompleted: Boolean
+        get() = prefs.getBoolean("onboarding_completed", false)
+        set(value) = prefs.edit().putBoolean("onboarding_completed", value).apply()
 
     // Daily target setting
     var dailyTarget: Int
@@ -118,7 +128,7 @@ class StreakManager(context: Context) {
 
     // Reset all data
     fun resetAllData() {
-        prefs.edit().clear().apply()
+        prefs.edit().clear().commit()
     }
 
     /**

@@ -1,6 +1,6 @@
 package com.example.wordme.screens.home
 
-import android.speech.tts.TextToSpeech
+import com.example.wordme.audio.VocabularyAudioManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +48,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.graphics.Color
@@ -60,6 +64,7 @@ import com.example.wordme.components.WordCard
 import com.example.wordme.components.YourTurnCard
 import com.example.wordme.ui.WordMeIcons
 import com.example.wordme.ui.WordViewModel
+import com.example.wordme.navigation.Screen
 import com.example.wordme.ui.theme.AccentBlue
 import com.example.wordme.ui.theme.CardBackground
 import com.example.wordme.ui.theme.LightBlue
@@ -68,6 +73,7 @@ import com.example.wordme.ui.theme.NavyPrimary
 import com.example.wordme.ui.theme.SoftBlueBorder
 import com.example.wordme.ui.theme.StreakAccent
 import java.util.Locale
+import com.example.wordme.data.LearningGoal
 
 @Composable
 fun HomeScreen(
@@ -77,6 +83,13 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var showEditNameDialog by remember { mutableStateOf(false) }
+    var showFeedbackDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel.isChecked) {
+        if (viewModel.isChecked) {
+            showFeedbackDialog = true
+        }
+    }
 
     if (showEditNameDialog) {
         NamePromptDialog(
@@ -93,49 +106,11 @@ fun HomeScreen(
         )
     }
 
-    // TextToSpeech engine initialization
-    var textToSpeech by remember { mutableStateOf<TextToSpeech?>(null) }
-    var ttsReady by remember { mutableStateOf(false) }
-
-    DisposableEffect(context) {
-        val engine = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale.US
-                ttsReady = true
-            }
-        }
-        textToSpeech = engine
+    // Vocabulary Audio Manager initialization
+    val audioManager = remember(context) { VocabularyAudioManager(context) }
+    DisposableEffect(audioManager) {
         onDispose {
-            engine.stop()
-            engine.shutdown()
-        }
-    }
-
-    // Function to speak word in English with voice gender configuration
-    val speakWord = { female: Boolean ->
-        if (ttsReady) {
-            val engine = textToSpeech
-            if (engine != null) {
-                val targetVoiceName = if (female) {
-                    "en-us-x-tpf-local"
-                } else {
-                    "en-us-x-tpd-local"
-                }
-                val selectedVoice = engine.voices?.firstOrNull {
-                    it.name == targetVoiceName
-                }
-                if (selectedVoice != null) {
-                    engine.voice = selectedVoice
-                }
-                engine.setSpeechRate(0.85f)
-                engine.setPitch(1.0f)
-                engine.speak(
-                    viewModel.currentWord.word,
-                    TextToSpeech.QUEUE_FLUSH,
-                    null,
-                    if (female) "female_${viewModel.currentWord.id}" else "male_${viewModel.currentWord.id}"
-                )
-            }
+            audioManager.shutdown()
         }
     }
 
@@ -144,24 +119,31 @@ fun HomeScreen(
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp) // Gap between major cards is 12dp
+        verticalArrangement = Arrangement.spacedBy(10.dp) // Reduced vertical gap between cards to move everything up
     ) {
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(6.dp)) // Shrunk top spacing to bring everything up
 
-        // Header Section (Row containing logo and text)
+        // Header Section (Row containing logo/title on the left, and Hi Name on the right)
         val configuration = LocalConfiguration.current
         val screenWidth = configuration.screenWidthDp
         val isSmallScreen = screenWidth < 360
 
-        val logoSize = if (isSmallScreen) 38.dp else 44.dp
-        val horizontalGap = if (isSmallScreen) 8.dp else 12.dp
-        val titleSize = if (isSmallScreen) 30.sp else 36.sp
-        val subtitleSize = if (isSmallScreen) 13.sp else 15.sp
-        val subtitleGap = if (isSmallScreen) 2.dp else 4.dp
+        val logoSize = if (isSmallScreen) 34.dp else 40.dp
+        val horizontalGap = if (isSmallScreen) 6.dp else 10.dp
+        val titleSize = if (isSmallScreen) 26.sp else 30.sp
 
-        Column {
+        val nameToDisplay = if (viewModel.userName.isNullOrBlank()) "Explorer" else viewModel.userName
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Header Section
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left part: Logo and Title text in a horizontal row
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
@@ -172,40 +154,28 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.width(horizontalGap))
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(subtitleGap)
-                ) {
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = Color(0xFF0D2A59), fontWeight = FontWeight.Bold)) {
-                                append("Word ")
-                            }
-                            withStyle(style = SpanStyle(color = Color(0xFF2784F5), fontWeight = FontWeight.Bold)) {
-                                append("Me!")
-                            }
-                        },
-                        fontSize = titleSize,
-                        fontFamily = FontFamily.Serif
-                    )
-                    Text(
-                        text = "One word. One sentence. Every day.",
-                        fontSize = subtitleSize,
-                        fontWeight = FontWeight.Normal,
-                        color = MutedBlueGrey
-                    )
-                    viewModel.userName?.let { name ->
-                        Text(
-                            text = "Hi $name",
-                            fontSize = subtitleSize,
-                            fontWeight = FontWeight.Bold,
-                            color = AccentBlue,
-                            modifier = Modifier
-                                .clickable { showEditNameDialog = true }
-                        )
-                    }
-                }
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color(0xFF0D2A59), fontWeight = FontWeight.Bold)) {
+                            append("Word ")
+                        }
+                        withStyle(style = SpanStyle(color = Color(0xFF2784F5), fontWeight = FontWeight.Bold)) {
+                            append("Me!")
+                        }
+                    },
+                    fontSize = titleSize,
+                    fontFamily = FontFamily.Serif
+                )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+
+            // Right part: Hi (Name)
+            Text(
+                text = "Hi $nameToDisplay",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = AccentBlue,
+                modifier = Modifier.clickable { showEditNameDialog = true }
+            )
         }
 
         // Progress Overview
@@ -215,8 +185,7 @@ fun HomeScreen(
             streak = viewModel.streakCount
         )
 
-        // Level Progress Card
-        LevelProgressCard(levelDetails = viewModel.levelDetails)
+
 
         if (viewModel.rehearsalWord != null) {
             Card(
@@ -267,8 +236,19 @@ fun HomeScreen(
             word = viewModel.currentWord,
             showExampleTranslations = viewModel.showExampleTranslations,
             onToggleExampleTranslations = { viewModel.toggleExampleTranslations() },
-            onSpeakFemale = { speakWord(true) },
-            onSpeakMale = { speakWord(false) }
+            onSpeakFemale = { wordToSpeak -> audioManager.playWord(wordToSpeak, female = true) },
+            onSpeakMale = { wordToSpeak -> audioManager.playWord(wordToSpeak, female = false) },
+            onMoreSentencesClick = { viewModel.generateMoreSentences() },
+            onAnotherWordClick = { viewModel.nextWord() },
+            learningGoal = viewModel.currentWord.goalTags.firstOrNull { tag ->
+                viewModel.learningGoals.any { goalName ->
+                    val goalEntry = LearningGoal.fromDisplayName(goalName)
+                    tag.equals(goalEntry?.displayName, ignoreCase = true) || tag.equals(goalEntry?.category, ignoreCase = true)
+                }
+            }
+                ?: viewModel.currentWord.goalTags.firstOrNull()
+                ?: viewModel.learningGoals.firstOrNull()
+                ?: ""
         )
 
         // Your Turn Card
@@ -280,85 +260,93 @@ fun HomeScreen(
             isCompleted = viewModel.isChecked
         )
 
-        // Feedback Result panel (shown only after checking)
-        AnimatedVisibility(
-            visible = viewModel.isChecked,
-            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
-            exit = fadeOut()
-        ) {
-            FeedbackCard(
-                word = viewModel.currentWord.word,
-                score = viewModel.currentSentenceScore
-            )
-        }
-
-        // Ready for another word CTA (always visible so users can cycle words at any time)
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, SoftBlueBorder),
-            colors = CardDefaults.cardColors(containerColor = LightBlue), // Soft pale blue background
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+        // Feedback Result popup dialog (shown only after checking)
+        if (showFeedbackDialog) {
+            Dialog(onDismissRequest = { showFeedbackDialog = false }) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, SoftBlueBorder),
+                    colors = CardDefaults.cardColors(containerColor = CardBackground),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    // Sparkles icon inside a white circle
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(CardBackground), // White circular background
-                        contentAlignment = Alignment.Center
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
-                            imageVector = WordMeIcons.Sparkles,
-                            contentDescription = null,
-                            tint = AccentBlue,
-                            modifier = Modifier.size(16.dp)
+                        FeedbackCard(
+                            word = viewModel.currentWord.word,
+                            score = viewModel.currentSentenceScore
                         )
+
+                        Text(
+                            text = if (viewModel.rehearsalWord != null) "Exit rehearsal and learn a new word?" else "Ready for another word?",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = NavyPrimary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Later button (closes dialog)
+                            Button(
+                                onClick = { showFeedbackDialog = false },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = LightBlue,
+                                    contentColor = AccentBlue
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
+                            ) {
+                                Text(
+                                    text = "Later",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            // Word Me! button (closes dialog and triggers nextWord)
+                            Button(
+                                onClick = {
+                                    showFeedbackDialog = false
+                                    if (viewModel.rehearsalWord != null) {
+                                        viewModel.exitRehearsal()
+                                    } else {
+                                        viewModel.nextWord()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = AccentBlue,
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
+                            ) {
+                                Text(
+                                    text = "Word Me! ✨",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
-
-                    Text(
-                        text = if (viewModel.rehearsalWord != null) "Exit rehearsal and learn a new word?" else "Ready for another word?",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NavyPrimary
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Word me action button (Always active as users can cycle words at will)
-                Button(
-                    onClick = { viewModel.nextWord() },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentBlue, // Bright blue button
-                        contentColor = CardBackground
-                    ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "WORD ME! ✨",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

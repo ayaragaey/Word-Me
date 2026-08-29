@@ -108,8 +108,6 @@ fun MyMilestonesScreen(
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp) // Cohesive 12dp gap
     ) {
-        Spacer(modifier = Modifier.height(12.dp))
-
         // Back to Profile Button
         Row(
             modifier = Modifier
@@ -131,6 +129,8 @@ fun MyMilestonesScreen(
                 color = AccentBlue
             )
         }
+
+
 
         // Header Area with Trophy
         Row(

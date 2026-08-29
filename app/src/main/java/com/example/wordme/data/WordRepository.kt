@@ -6,64 +6,73 @@ import com.google.gson.reflect.TypeToken
 
 object WordRepository {
 
-    private data class WordJson(
-        val id: Int,
-        val word: String,
-        val translation: String,
-        val pronunciation: String,
-        val type: String,
-        val definition: String,
-        val examples: List<String>,
-        val exampleTranslations: List<String>? = null,
-        val level: String = "B1",
-        val category: String = "general"
-    )
+    private var cachedWords: List<Word>? = null
 
     fun loadWords(context: Context): List<Word> {
+
+        if (cachedWords != null) {
+            return cachedWords!!
+        }
 
         val json = context.assets
             .open("words.json")
             .bufferedReader()
             .use { it.readText() }
 
-        val listType = object : TypeToken<List<WordJson>>() {}.type
+        val type = object : TypeToken<List<Word>>() {}.type
 
-        val jsonWords: List<WordJson> =
-            Gson().fromJson(json, listType)
+        val mockLookup = (WordData.mockWordsList + WordData.initialLearnedWords)
+            .associateBy { it.word.uppercase().trim() }
 
-        // Map mock words by uppercase string for easy translation lookup
-        val mockLookup = WordData.mockWordsList.associateBy { it.word.uppercase() }
+        cachedWords = Gson().fromJson<List<Word>>(json, type).map { word ->
+            val matchedMock = mockLookup[word.word.uppercase().trim()]
 
-        return jsonWords.map { item ->
-            val matchedMockWord = mockLookup[item.word.uppercase()]
-            
-            // Generate fallback translations if the word does not have hardcoded ones in assets or mocks
-            val translations = matchedMockWord?.exampleTranslations ?: run {
-                if (item.exampleTranslations.isNullOrEmpty()) {
-                    item.examples.mapIndexed { idx, _ ->
-                        when (idx) {
-                            0 -> "هذه جملة توضيحية لاستخدام كلمة (${item.translation})."
-                            1 -> "مثال آخر يوضح كيفية استعمال (${item.translation}) في سياق مفيد."
-                            else -> "نموذج يبين صياغة كلمة (${item.translation}) بشكل صحيح."
-                        }
+            val translations = when {
+                !matchedMock?.exampleTranslations.isNullOrEmpty() -> {
+                    matchedMock!!.exampleTranslations
+                }
+                !word.exampleTranslations.isNullOrEmpty() -> {
+                    word.exampleTranslations
+                }
+                else -> {
+                    word.examples.map { sentence ->
+                        ExampleSentenceTranslator.translate(
+                            sentence = sentence,
+                            targetWord = word.word,
+                            wordTranslation = word.translation
+                        )
                     }
-                } else {
-                    item.exampleTranslations
                 }
             }
 
-            Word(
-                id = item.id,
-                word = item.word,
-                translation = item.translation,
-                pronunciation = item.pronunciation,
-                type = item.type,
-                definition = item.definition,
-                examples = item.examples,
+            word.copy(
                 exampleTranslations = translations,
-                level = item.level,
-                category = item.category
+                goalTags = word.goalTags ?: emptyList()
             )
         }
+
+        return cachedWords!!
+    }
+
+    fun getWordsForGoals(
+        context: Context,
+        goals: List<LearningGoal>
+    ): List<Word> {
+        val allWords = loadWords(context)
+
+        return allWords.filter { word ->
+            goals.isEmpty() || goals.any { goal ->
+                word.goalTags.contains(goal.displayName)
+            }
+        }
+    }
+
+    fun getAllWordsMap(context: Context): Map<Int, Word> {
+        val loaded = loadWords(context)
+        return (loaded + WordData.mockWordsList + WordData.initialLearnedWords).associateBy { it.id }
+    }
+
+    fun getWordById(context: Context, id: Int): Word? {
+        return getAllWordsMap(context)[id]
     }
 }

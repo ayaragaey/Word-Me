@@ -3,7 +3,7 @@ package com.example.wordme.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Premium Word Me Color Palette
-val MainBackground = Color(0xFFF4F9FF)     // #F4F9FF App Background
+val MainBackground = Color(0xFFFFFFFF)     // #FFFFFF App Background (White)
 val CardBackground = Color(0xFFFFFFFF)     // #FFFFFF Cards
 val NavyPrimary = Color(0xFF0E2A59)        // #0E2A59 Deep navy
 val DarkBlue = Color(0xFF163E73)           // #163E73 Dark blue

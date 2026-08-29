@@ -1,8 +1,13 @@
 package com.example.wordme.ui
 
+import com.example.wordme.data.UserLearningProfile
+import com.example.wordme.data.LearningGoal
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.wordme.data.WordRepository
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +37,12 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     // Persistent streak manager
     private val streakManager = StreakManager(application.applicationContext)
 
+    var learningGoals by mutableStateOf(streakManager.learningGoals)
+        private set
+
+    var onboardingCompleted by mutableStateOf(streakManager.onboardingCompleted)
+        private set
+
     // User name
     var userName by mutableStateOf(streakManager.userName)
         private set
@@ -47,18 +58,75 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         private set
 
     // Vocabulary words
-    val words: List<Word> = WordRepository
-        .loadWords(application.applicationContext)
-        .shuffled()
+    var userProfile by mutableStateOf(UserLearningProfile())
+        private set
+
+
+    var words by mutableStateOf<List<Word>>(emptyList())
+        private set
+
     var currentWordIndex by mutableStateOf(0)
         private set
 
+    private fun loadWordsForCurrentGoals() {
+        val selectedGoalEntries = LearningGoal.entries.filter { goal ->
+            learningGoals.contains(goal.displayName) || learningGoals.contains(goal.category)
+        }
+        val loaded = WordRepository.getWordsForGoals(
+            getApplication<Application>().applicationContext,
+            selectedGoalEntries
+        )
+        words = if (loaded.isNotEmpty()) loaded.shuffled() else WordRepository.loadWords(getApplication<Application>().applicationContext).shuffled()
+    }
+
+    fun toggleLearningGoal(goal: String) {
+        val current = learningGoals.toMutableSet()
+        if (current.contains(goal)) {
+            if (current.size > 1) {
+                current.remove(goal)
+            }
+        } else {
+            current.add(goal)
+        }
+        streakManager.learningGoals = current
+        learningGoals = current
+        val selectedGoalEntries = current.mapNotNull { LearningGoal.fromDisplayName(it) }
+        userProfile = userProfile.copy(
+            selectedGoals = selectedGoalEntries
+        )
+        loadWordsForCurrentGoals()
+        currentWordIndex = 0
+    }
+
+    fun completeOnboarding(name: String, goals: Set<String>) {
+        streakManager.userName = name
+        userName = name
+        streakManager.learningGoals = goals
+        learningGoals = goals
+        streakManager.onboardingCompleted = true
+        onboardingCompleted = true
+        val selectedGoalEntries = goals.mapNotNull { LearningGoal.fromDisplayName(it) }
+        userProfile = userProfile.copy(
+            selectedGoals = selectedGoalEntries
+        )
+        loadWordsForCurrentGoals()
+        currentWordIndex = 0
+        WidgetUpdater.updateWidget(getApplication())
+    }
+
+    init {
+        loadWordsForCurrentGoals()
+        android.util.Log.d("WORD_COUNT", "Loaded words: ${words.size}")
+    }
+
     val currentWord: Word
-        get() = rehearsalWord ?: words[currentWordIndex]
+        get() = rehearsalWord ?: words.getOrElse(currentWordIndex) {
+            words.firstOrNull() ?: WordData.mockWordsList.first()
+        }
 
     // Vocab lookup map combining assets database and initial mock words
     private val allWordsLookup: Map<Int, Word> by lazy {
-        (words + WordData.initialLearnedWords).associateBy { it.id }
+        WordRepository.getAllWordsMap(getApplication<Application>().applicationContext)
     }
 
     // Practice sentence states
@@ -104,21 +172,7 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         reminderTime = time
     }
 
-    var learningGoals by mutableStateOf(streakManager.learningGoals)
-        private set
 
-    fun toggleLearningGoal(goal: String) {
-        val current = learningGoals.toMutableSet()
-        if (current.contains(goal)) {
-            if (current.size > 1) {
-                current.remove(goal)
-            }
-        } else {
-            current.add(goal)
-        }
-        streakManager.learningGoals = current
-        learningGoals = current
-    }
 
     var dailyTarget by mutableStateOf(streakManager.dailyTarget)
         private set
@@ -321,6 +375,25 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleExampleTranslations() {
         showExampleTranslations = !showExampleTranslations
+    }
+
+    fun generateMoreSentences() {
+        val word = currentWord
+        val (newExamples, newTranslations) = com.example.wordme.utils.WordSentenceGenerator.generateNewSentences(word)
+        val updatedWord = word.copy(
+            examples = newExamples,
+            exampleTranslations = newTranslations
+        )
+        if (rehearsalWord != null) {
+            rehearsalWord = updatedWord
+        } else {
+            val updatedList = words.toMutableList()
+            if (currentWordIndex in updatedList.indices) {
+                updatedList[currentWordIndex] = updatedWord
+                words = updatedList
+            }
+        }
+        showExampleTranslations = false
     }
 
     fun evaluateSentence(sentence: String, word: String): Int {
@@ -578,22 +651,45 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
         notificationsEnabled = streakManager.notificationsEnabled
         reminderTime = streakManager.reminderTime
         learningGoals = streakManager.learningGoals
+        onboardingCompleted = streakManager.onboardingCompleted
         dailyTarget = streakManager.dailyTarget
 
         // Celebrations & learned words
         pendingCelebrations = emptyList()
         reconstructLearnedWords()
 
+        // Re-sync user learning profile and word deck for default goals
+        val selectedGoalEntries = learningGoals.mapNotNull { LearningGoal.fromDisplayName(it) }
+        userProfile = UserLearningProfile(
+            selectedGoals = selectedGoalEntries,
+            dailyWordTarget = streakManager.dailyTarget
+        )
+        loadWordsForCurrentGoals()
+
+        // Reset celebrations tracking
+        streakManager.acknowledgedCelebrations = emptySet()
+        streakManager.isAcknowledgedCelebrationsInitialized = false
+        streakManager.lastShownStreakCelebration = 0
+        streakManager.celebrationPending = false
+        streakManager.pendingCelebrationStreak = 0
+
         // Set tab back to Home
         selectedTab = Screen.HOME
 
-        // Reset current word index
+        // Reset practice / rehearsal states
+        rehearsalWord = null
         currentWordIndex = 0
         sentenceText = ""
         isChecked = false
         showExampleTranslations = false
+        currentSentenceScore = 0
+
+        // Reset recovery states
+        stopTimerJob()
         isRecoveryActive = false
         recoveryStep = RecoveryStep.INTRO
+        currentQuestionIndex = 0
+        selectedOptionIndex = null
 
         WidgetUpdater.updateWidget(getApplication())
     }
@@ -601,6 +697,21 @@ class WordViewModel(application: Application) : AndroidViewModel(application) {
     override fun onCleared() {
         super.onCleared()
         stopTimerJob()
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(
+                modelClass: Class<T>,
+                extras: CreationExtras
+            ): T {
+                // Get the Application object from extras
+                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+
+                return WordViewModel(application) as T
+            }
+        }
     }
 }
 

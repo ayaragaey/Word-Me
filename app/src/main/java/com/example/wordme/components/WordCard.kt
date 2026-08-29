@@ -2,10 +2,12 @@ package com.example.wordme.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -32,9 +36,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wordme.data.LearningGoal
 import com.example.wordme.data.Word
 import com.example.wordme.ui.WordMeIcons
 import com.example.wordme.ui.theme.AccentBlue
@@ -52,8 +59,11 @@ fun WordCard(
     word: Word,
     showExampleTranslations: Boolean,
     onToggleExampleTranslations: () -> Unit,
-    onSpeakFemale: () -> Unit,
-    onSpeakMale: () -> Unit,
+    onSpeakFemale: (Word) -> Unit,
+    onSpeakMale: (Word) -> Unit,
+    onMoreSentencesClick: () -> Unit,
+    onAnotherWordClick: () -> Unit,
+    learningGoal: String? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -110,7 +120,7 @@ fun WordCard(
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(FemalePronunciationBg)
-                            .clickable { onSpeakFemale() },
+                            .clickable { onSpeakFemale(word) },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -127,7 +137,7 @@ fun WordCard(
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(LightBlue)
-                            .clickable { onSpeakMale() },
+                            .clickable { onSpeakMale(word) },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -142,14 +152,42 @@ fun WordCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Main Vocabulary Word (Very large, deep navy)
-            Text(
-                text = word.word.uppercase(),
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = NavyPrimary,
-                letterSpacing = 0.5.sp
-            )
+            // Main Vocabulary Word & Learning Goal Tag
+            val goalToDisplay = getWordLearningGoal(word, learningGoal)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Word and Change Word (Undo) icon inline
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    Text(
+                        text = word.word.uppercase(),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = NavyPrimary,
+                        letterSpacing = 0.5.sp
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Another Word",
+                        tint = AccentBlue,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable { onAnotherWordClick() }
+                    )
+                }
+
+                if (!goalToDisplay.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    LearningGoalTag(goal = goalToDisplay)
+                }
+            }
 
             // Arabic Translation & English Transliteration on a single clean line
             Row(
@@ -158,13 +196,13 @@ fun WordCard(
             ) {
                 Text(
                     text = word.translation,
-                    fontSize = 22.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = AccentBlue
                 )
                 Text(
                     text = "/ ${word.pronunciation} /",
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     color = MutedBlueGrey
                 )
             }
@@ -226,7 +264,7 @@ fun WordCard(
                         .clip(RoundedCornerShape(8.dp))
                         .background(LightBlue)
                         .clickable { onToggleExampleTranslations() }
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -234,13 +272,13 @@ fun WordCard(
                     ) {
                         Text(
                             text = if (showExampleTranslations) "Hide Translation" else "Show Translation",
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = AccentBlue
                         )
                         Text(
                             text = if (showExampleTranslations) "⌃" else "⌄",
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = AccentBlue
                         )
@@ -310,6 +348,29 @@ fun WordCard(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Bottom Actions: More Sentences (right aligned)
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(LightBlue)
+                        .clickable { onMoreSentencesClick() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "More Sentences",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AccentBlue
+                    )
+                }
+            }
         }
     }
 }
@@ -341,3 +402,61 @@ fun highlightSentenceWord(sentence: String, target: String): AnnotatedString {
         }
     }
 }
+
+/**
+ * Helper to resolve the exact Learning Goal for a word.
+ */
+fun getWordLearningGoal(word: Word, preferredGoal: String? = null): String {
+    return preferredGoal
+        ?: word.goalTags.firstOrNull { it.isNotBlank() }
+        ?: when (word.category.lowercase()) {
+            "business", "finance" -> LearningGoal.WORK_AND_BUSINESS.displayName
+            "exam", "exams", "study", "education" -> LearningGoal.ACADEMIC_ENGLISH.displayName
+            "travel" -> LearningGoal.TRAVEL_ENGLISH.displayName
+            "media", "reading", "movies" -> LearningGoal.MEDIA_AND_READING.displayName
+            else -> LearningGoal.EVERYDAY_ENGLISH.displayName
+        }
+}
+
+/**
+ * Compact visual chip displaying a word's exact learning goal.
+ */
+@Composable
+fun LearningGoalTag(
+    goal: String,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 8.sp,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 5.dp, vertical = 1.5.dp)
+) {
+    if (goal.isBlank()) return
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(LightBlue)
+            .border(1.dp, SoftBlueBorder, RoundedCornerShape(6.dp))
+            .padding(contentPadding),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = goal,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            color = AccentBlue,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/**
+ * Backward compatibility alias for LearningGoalTag.
+ */
+@Composable
+fun CategoryTag(
+    category: String,
+    modifier: Modifier = Modifier
+) {
+    LearningGoalTag(goal = category, modifier = modifier)
+}
+

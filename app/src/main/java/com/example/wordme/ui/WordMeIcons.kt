@@ -428,6 +428,65 @@ object WordMeIcons {
             lineTo(15f, 12f)
             lineTo(9f, 18f)
         }.build()
+
+    val Microphone: ImageVector
+        get() = ImageVector.Builder(
+            name = "Microphone",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).path(
+            fill = null,
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = 2f,
+            strokeLineCap = StrokeCap.Round,
+            strokeLineJoin = StrokeJoin.Round
+        ) {
+            // Mic capsule
+            moveTo(12f, 2f)
+            curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
+            lineTo(9f, 11f)
+            curveToRelative(0f, 1.66f, 1.34f, 3f, 3f, 3f)
+            curveToRelative(1.66f, 0f, 3f, -1.34f, 3f, -3f)
+            lineTo(15f, 5f)
+            curveToRelative(0f, -1.66f, -1.34f, -3f, -3f, -3f)
+            close()
+            // Mic cradle
+            moveTo(19f, 10f)
+            curveToRelative(0f, 3.87f, -3.13f, 7f, -7f, 7f)
+            curveToRelative(-3.87f, 0f, -7f, -3.13f, -7f, -7f)
+            // Stand stem
+            moveTo(12f, 17f)
+            lineTo(12f, 21f)
+            // Stand base
+            moveTo(8f, 21f)
+            lineTo(16f, 21f)
+        }.build()
+
+    val Stop: ImageVector
+        get() = ImageVector.Builder(
+            name = "Stop",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).path(
+            fill = SolidColor(Color.Black),
+            stroke = null
+        ) {
+            moveTo(7f, 7f)
+            lineTo(17f, 7f)
+            curveToRelative(0.55f, 0f, 1f, 0.45f, 1f, 1f)
+            lineTo(18f, 16f)
+            curveToRelative(0f, 0.55f, -0.45f, 1f, -1f, 1f)
+            lineTo(7f, 17f)
+            curveToRelative(-0.55f, 0f, -1f, -0.45f, -1f, -1f)
+            lineTo(6f, 8f)
+            curveToRelative(0f, -0.55f, 0.45f, -1f, 1f, -1f)
+            close()
+        }.build()
 }
+
 
 

@@ -47,7 +47,7 @@ fun ProgressOverview(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp), // Tighter padding (10dp)
+                .padding(vertical = 4.dp), // Thinner vertical padding
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Days active
@@ -60,17 +60,17 @@ fun ProgressOverview(
                     imageVector = WordMeIcons.Calendar,
                     contentDescription = null,
                     tint = AccentBlue,
-                    modifier = Modifier.size(20.dp) // Icon size around 20-22dp
+                    modifier = Modifier.size(16.dp) // Smaller icon size
                 )
                 Text(
                     text = "$days",
-                    fontSize = 26.sp, // Counter number around 26sp
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = NavyPrimary
                 )
                 Text(
                     text = "Days",
-                    fontSize = 12.sp, // Label around 12-13sp
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MutedBlueGrey
                 )
@@ -80,7 +80,7 @@ fun ProgressOverview(
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(20.dp) // Tighter 20dp dividers
+                    .height(14.dp) // Thinner divider height
                     .background(SoftBlueBorder)
             )
 
@@ -94,17 +94,17 @@ fun ProgressOverview(
                     imageVector = WordMeIcons.Book,
                     contentDescription = null,
                     tint = AccentBlue,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(16.dp) // Smaller icon size
                 )
                 Text(
                     text = "$words",
-                    fontSize = 26.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = NavyPrimary
                 )
                 Text(
                     text = "Words",
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MutedBlueGrey
                 )
@@ -114,7 +114,7 @@ fun ProgressOverview(
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(20.dp)
+                    .height(14.dp) // Thinner divider height
                     .background(SoftBlueBorder)
             )
 
@@ -128,17 +128,17 @@ fun ProgressOverview(
                     imageVector = WordMeIcons.Fire,
                     contentDescription = null,
                     tint = StreakAccent,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(16.dp) // Smaller icon size
                 )
                 Text(
                     text = "$streak",
-                    fontSize = 26.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = NavyPrimary
                 )
                 Text(
                     text = "Day Streak",
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MutedBlueGrey
                 )

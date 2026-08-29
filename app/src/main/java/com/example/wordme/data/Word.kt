@@ -11,5 +11,6 @@ data class Word(
     val exampleTranslations: List<String> = emptyList(),
     val level: String = "B1",
     val category: String = "general",
+    val goalTags: List<String> = emptyList(),
     val learnedDate: String? = null
 )

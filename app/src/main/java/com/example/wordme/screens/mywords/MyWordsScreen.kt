@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -51,6 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wordme.components.LearningGoalTag
+import com.example.wordme.components.getWordLearningGoal
 import com.example.wordme.data.Word
 import com.example.wordme.ui.theme.AccentBlue
 import com.example.wordme.ui.theme.CardBackground
@@ -120,7 +125,29 @@ fun MyWordsScreen(
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Back to Home Button
+        Row(
+            modifier = Modifier
+                .clickable { onNavigateToHome() }
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back to Home",
+                tint = AccentBlue,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = "Back to Home",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = AccentBlue
+            )
+        }
 
         // Header Section
         Column {
@@ -369,12 +396,15 @@ fun MyWordsScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WordEntryItem(
     word: Word,
     onRehearseClick: (Word) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val goal = remember(word) { getWordLearningGoal(word) }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -382,17 +412,32 @@ fun WordEntryItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = word.word.uppercase(),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1784F5)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = word.word.uppercase(),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1784F5)
+                )
+
+                if (goal.isNotBlank()) {
+                    LearningGoalTag(
+                        goal = goal,
+                        fontSize = 8.sp,
+                        contentPadding = PaddingValues(horizontal = 5.dp, vertical = 1.5.dp)
+                    )
+                }
+            }
             Text(
                 text = "Learned on: ${formatLearnedDate(word.learnedDate ?: "")}",
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 color = MutedBlueGrey
             )
         }
